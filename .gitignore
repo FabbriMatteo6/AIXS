@@ -1,0 +1,65 @@
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Secrets / local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# Node / website
+node_modules/
+dist/
+.npm/
+
+# Native builds
+build/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+*.o
+*.obj
+*.so
+*.dylib
+*.dll
+*.exe
+
+# Large model / checkpoint artifacts
+*.safetensors
+*.gguf
+*.ggml
+*.ckpt
+*.pt
+*.pth
+*.onnx
+*.bin
+*.weights
+
+# Large data / traces / caches
+artifacts/
+checkpoints/
+models/
+traces/
+logs/
+cache/
+*.trace
+*.prof
+*.nsys-rep
+
+# Experiment scratch space
+**/scratch/
+**/tmp/

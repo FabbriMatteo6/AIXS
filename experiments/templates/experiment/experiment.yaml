@@ -1,0 +1,35 @@
+schema_version: "0.1"
+experiment_id: "M01-E000"
+mission: "mission-01"
+title: "Replace with a concise experiment title"
+status: "planned"
+hypothesis: "State the falsifiable or testable hypothesis."
+hardware_profile: "registry/hardware/profiles/replace-me.yaml"
+hardware_role: "exploratory"
+model:
+  name: "TBD"
+  source: ""
+  revision: ""
+  representation: ""
+software:
+  upstream_repository: ""
+  upstream_commit: ""
+  aixs_code_path: ""
+  os: ""
+  drivers: ""
+workload:
+  benchmark: ""
+  prompts_or_dataset: ""
+  context_tokens: null
+  generation_tokens: null
+  repetitions: null
+measurements:
+  quality: []
+  ttft_ms: null
+  generation_tokens_per_second: null
+  ram_peak_gb: null
+  vram_peak_gb: null
+  storage_read_gb: null
+  energy_wh: null
+artifacts: []
+notes: ""

@@ -1,0 +1,51 @@
+name: Experiment / reproduction
+description: Propose a new experiment or an independent reproduction
+title: "[Experiment] "
+labels: []
+body:
+  - type: dropdown
+    id: mission
+    attributes:
+      label: Mission
+      options:
+        - Mission 01 — Establish the Baseline
+        - Cross-mission / not assigned
+    validations:
+      required: true
+  - type: textarea
+    id: hypothesis
+    attributes:
+      label: Hypothesis or reproduction target
+      description: What are you trying to test or reproduce?
+    validations:
+      required: true
+  - type: dropdown
+    id: pillar
+    attributes:
+      label: Primary pillar
+      options:
+        - Model
+        - Harness / Orchestration
+        - Software / Runtime
+        - OS / System Layer
+        - Hardware
+        - Cross-pillar
+    validations:
+      required: true
+  - type: textarea
+    id: hardware
+    attributes:
+      label: Hardware
+      description: Link an existing registry profile or describe the machine you can register.
+  - type: textarea
+    id: method
+    attributes:
+      label: Proposed method
+      description: Include upstream/model revisions if already known.
+    validations:
+      required: true
+  - type: textarea
+    id: success
+    attributes:
+      label: What would make the result useful?
+      description: Positive, negative and inconclusive outcomes can all be useful if measured clearly.

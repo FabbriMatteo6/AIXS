@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AIXS hardware profile v0.1",
+  "type": "object",
+  "required": ["schema_version", "id", "cpu", "memory", "storage", "os"],
+  "properties": {
+    "schema_version": {"const": "0.1"},
+    "id": {"type": "string"},
+    "contributor": {"type": ["string", "null"]},
+    "cpu": {"type": "object"},
+    "accelerators": {"type": "array"},
+    "memory": {"type": "object"},
+    "storage": {"type": "array"},
+    "os": {"type": "object"},
+    "drivers": {"type": "object"},
+    "power_thermal": {"type": "object"},
+    "topology": {"type": "object"},
+    "notes": {"type": "string"}
+  },
+  "additionalProperties": true
+}

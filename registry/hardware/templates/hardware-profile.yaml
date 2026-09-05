@@ -1,0 +1,32 @@
+schema_version: "0.1"
+id: "replace-with-stable-profile-id"
+contributor: null
+cpu:
+  vendor: ""
+  model: ""
+  cores: null
+accelerators:
+  - type: "gpu-or-integrated-accelerator"
+    vendor: ""
+    model: ""
+    memory_gb: null
+memory:
+  ram_gb: null
+  unified: false
+  speed_or_bandwidth: ""
+storage:
+  - type: "nvme"
+    model: ""
+    capacity_gb: null
+    filesystem: ""
+os:
+  name: ""
+  version: ""
+  kernel_or_build: ""
+drivers: {}
+power_thermal:
+  mode: ""
+  limits: ""
+topology:
+  interconnect: ""
+notes: "Do not include serial numbers or private machine identifiers."

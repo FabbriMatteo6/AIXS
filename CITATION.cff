@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+message: "If AIXS materially contributes to your research, please cite the repository and the specific experiments, reports, or upstream work you used."
+title: "AIXS — Artificial Intelligence, Accessible"
+type: software
+authors:
+  - name: "AIXS Community"
+repository-code: "https://github.com/FabbriMatteo6/AIXS"
+url: "https://github.com/FabbriMatteo6/AIXS"
+license: Apache-2.0
+keywords:
+  - local AI
+  - inference
+  - mixture of experts
+  - systems research
+  - consumer hardware

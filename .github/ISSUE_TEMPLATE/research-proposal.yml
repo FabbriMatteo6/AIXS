@@ -1,0 +1,40 @@
+name: Research proposal / hypothesis
+description: Discuss a research direction before turning it into experiments
+title: "[Research] "
+labels: []
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Research question
+      description: State the question or hypothesis as precisely as you can.
+    validations:
+      required: true
+  - type: dropdown
+    id: pillar
+    attributes:
+      label: Primary pillar
+      options:
+        - Model
+        - Harness / Orchestration
+        - Software / Runtime
+        - OS / System Layer
+        - Hardware
+        - Cross-pillar
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Existing evidence
+      description: Papers, projects, measurements, prior experiments, or observations. Links are welcome.
+  - type: textarea
+    id: test
+    attributes:
+      label: How could we test it?
+      description: A rough experiment idea is enough.
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks / confounders
+      description: What could make the result misleading?
