@@ -17,6 +17,11 @@ const cfg = {
   plausibleDomain: (process.env.PLAUSIBLE_DOMAIN || '').trim()
 };
 
+const withCinematicRuntime = html => html.replace(
+  '</body>',
+  '<script src="/assets/ambient-video-runtime.js" defer></script></body>'
+);
+
 await fs.rm(dist, { recursive:true, force:true });
 await fs.mkdir(path.join(dist,'assets'), { recursive:true });
 await fs.mkdir(path.join(dist,'it'), { recursive:true });
@@ -24,11 +29,11 @@ await fs.mkdir(path.join(dist,'privacy'), { recursive:true });
 await fs.mkdir(path.join(dist,'it','privacy'), { recursive:true });
 await fs.cp(path.join(root,'src','assets'), path.join(dist,'assets'), { recursive:true });
 
-await fs.writeFile(path.join(dist,'index.html'), renderPage(content.en, cfg));
-await fs.writeFile(path.join(dist,'it','index.html'), renderPage(content.it, cfg));
+await fs.writeFile(path.join(dist,'index.html'), withCinematicRuntime(renderPage(content.en, cfg)));
+await fs.writeFile(path.join(dist,'it','index.html'), withCinematicRuntime(renderPage(content.it, cfg)));
 await fs.writeFile(path.join(dist,'privacy','index.html'), renderPrivacy(content.en, cfg));
 await fs.writeFile(path.join(dist,'it','privacy','index.html'), renderPrivacy(content.it, cfg));
-await fs.writeFile(path.join(dist,'404.html'), renderPage(content.en, cfg));
+await fs.writeFile(path.join(dist,'404.html'), withCinematicRuntime(renderPage(content.en, cfg)));
 
 const robots = cfg.siteUrl
   ? `User-agent: *\nAllow: /\nSitemap: ${cfg.siteUrl}/sitemap.xml\n`
