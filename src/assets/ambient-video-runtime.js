@@ -4,107 +4,115 @@
   const saveData = Boolean(navigator.connection?.saveData);
   if (reduceMotion || saveData) return;
 
-  function prepare(video, {eager=false} = {}) {
-    if (!video) return null;
+  const hero = document.querySelector('[data-static-video="hero"]');
+  const closingA = document.querySelector('[data-static-video="closing-a"]');
+  const closingB = document.querySelector('[data-static-video="closing-b"]');
+
+  function forceAmbient(video, hostClass='cinematic-playing') {
+    if (!video) return;
     const host = video.parentElement;
     video.muted = true;
     video.defaultMuted = true;
     video.volume = 0;
     video.playsInline = true;
-    video.loop = true;
-    video.autoplay = true;
+    video.controls = false;
+    video.removeAttribute('controls');
     video.setAttribute('muted','');
     video.setAttribute('playsinline','');
     video.setAttribute('webkit-playsinline','');
-    video.setAttribute('autoplay','');
-    video.setAttribute('loop','');
-    video.preload = eager ? 'auto' : 'metadata';
-
-    const markReady = () => {
-      video.classList.add('is-ready');
-      host?.classList.add('cinematic-ready');
-    };
-    const markPlaying = () => {
-      markReady();
-      video.classList.add('is-playing');
-      host?.classList.add('cinematic-playing');
-    };
-    const markStopped = () => {
-      video.classList.remove('is-playing');
-      host?.classList.remove('cinematic-playing');
-    };
-
-    const start = () => {
-      if (video.readyState === 0) {
-        try { video.load(); } catch (_) {}
-      }
-      const p = video.play();
-      if (p && typeof p.then === 'function') {
-        p.then(() => {
-          if (!video.paused) markPlaying();
-        }).catch(() => markStopped());
-      } else if (!video.paused) {
-        markPlaying();
-      }
-    };
-
-    video.addEventListener('loadeddata', markReady);
-    video.addEventListener('canplay', markReady);
-    video.addEventListener('playing', markPlaying);
-    video.addEventListener('play', markPlaying);
-    video.addEventListener('pause', markStopped);
-    video.addEventListener('ended', markStopped);
-    video.addEventListener('stalled', markStopped);
-    video.addEventListener('error', () => {
-      video.classList.remove('is-ready','is-playing');
-      host?.classList.remove('cinematic-ready','cinematic-playing');
-    });
-
-    try { video.load(); } catch (_) {}
-    if (video.readyState >= 2) markReady();
+    const start = () => video.play().then(() => host?.classList.add(hostClass)).catch(() => {});
+    video.addEventListener('playing', () => host?.classList.add(hostClass));
+    video.addEventListener('canplay', start, {once:true});
+    if (video.readyState >= 2) start();
+    else try { video.load(); } catch (_) {}
     return start;
   }
 
-  const hero = document.querySelector('.hero-cinematic-video');
-  const closing = document.querySelector('.closing-cinematic-video');
-  const startHero = prepare(hero, {eager:true});
-  const startClosing = prepare(closing, {eager:false});
-
-  // Start the above-the-fold hero immediately. Multiple idempotent attempts cover
-  // browsers that delay media readiness until the first paint.
+  const startHero = forceAmbient(hero);
   startHero?.();
   requestAnimationFrame(() => startHero?.());
-  setTimeout(() => startHero?.(), 120);
-  setTimeout(() => startHero?.(), 600);
+  setTimeout(() => startHero?.(), 100);
+  setTimeout(() => startHero?.(), 450);
 
-  if (closing && startClosing) {
+  // Retry muted autoplay on the first benign interaction without requiring the user
+  // to click the video itself.
+  const retry = () => {
+    if (hero?.paused) startHero?.();
+    if (closingA?.paused && closingA?.parentElement?.getBoundingClientRect().top < innerHeight + 700) {
+      closingA.play().catch(()=>{});
+    }
+  };
+  addEventListener('pointermove', retry, {passive:true, once:true});
+  addEventListener('scroll', retry, {passive:true, once:true});
+  addEventListener('keydown', retry, {once:true});
+
+  if (closingA && closingB) {
+    const host = closingA.parentElement;
+    [closingA, closingB].forEach(v => {
+      v.controls = false;
+      v.removeAttribute('controls');
+      v.muted = true;
+      v.defaultMuted = true;
+      v.volume = 0;
+      v.playsInline = true;
+      v.setAttribute('muted','');
+      v.setAttribute('playsinline','');
+      v.setAttribute('webkit-playsinline','');
+    });
+
+    let active = closingA;
+    let standby = closingB;
+    let swapping = false;
+    const CROSSFADE_SECONDS = 0.55;
+
+    const markPlaying = () => host?.classList.add('cinematic-playing');
+    closingA.addEventListener('playing', markPlaying);
+    closingB.addEventListener('playing', markPlaying);
+
+    const swap = async () => {
+      if (swapping || !active.duration || active.duration < 1) return;
+      swapping = true;
+      try {
+        standby.currentTime = 0;
+        await standby.play();
+        standby.classList.add('is-active');
+        active.classList.remove('is-active');
+        const old = active;
+        active = standby;
+        standby = old;
+        setTimeout(() => {
+          standby.pause();
+          try { standby.currentTime = 0; } catch (_) {}
+          swapping = false;
+        }, Math.round(CROSSFADE_SECONDS * 1000));
+      } catch (_) {
+        swapping = false;
+      }
+    };
+
+    const tick = () => {
+      if (!active.paused && Number.isFinite(active.duration) && active.duration > 0) {
+        const remaining = active.duration - active.currentTime;
+        if (remaining <= CROSSFADE_SECONDS + .08) swap();
+      }
+      requestAnimationFrame(tick);
+    };
+
+    const startClosing = () => {
+      if (active.paused) active.play().catch(()=>{});
+    };
+
     const io = new IntersectionObserver(entries => {
       for (const entry of entries) {
         if (entry.isIntersecting) startClosing();
-        else entry.target.pause();
+        else {
+          closingA.pause();
+          closingB.pause();
+        }
       }
     }, {threshold:.01, rootMargin:'700px 0px'});
-    io.observe(closing);
+    io.observe(host);
+
+    requestAnimationFrame(tick);
   }
-
-  // A first user interaction is also a safe retry point on browsers with unusually
-  // strict autoplay behavior. Since the videos are muted, this remains non-intrusive.
-  const retryAmbient = () => {
-    if (hero && hero.getBoundingClientRect().bottom > 0 && hero.paused) startHero?.();
-    if (closing && closing.paused) {
-      const r = closing.getBoundingClientRect();
-      if (r.top < innerHeight + 700 && r.bottom > -700) startClosing?.();
-    }
-  };
-  addEventListener('pointerdown', retryAmbient, {passive:true, once:true});
-  addEventListener('keydown', retryAmbient, {once:true});
-
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-      hero?.pause();
-      closing?.pause();
-    } else {
-      retryAmbient();
-    }
-  });
 })();
