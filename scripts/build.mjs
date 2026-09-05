@@ -17,10 +17,27 @@ const cfg = {
   plausibleDomain: (process.env.PLAUSIBLE_DOMAIN || '').trim()
 };
 
-const withCinematicRuntime = html => html.replace(
-  '</body>',
-  '<script src="/assets/ambient-video-runtime.js" defer></script></body>'
-);
+const heroVideo = `<video class="cinematic-video hero-cinematic-video" data-static-video="hero" autoplay muted loop playsinline webkit-playsinline preload="auto" tabindex="-1" aria-hidden="true" disablepictureinpicture controlslist="nodownload noplaybackrate nofullscreen"><source src="/assets/video/hero-inference.mp4" type="video/mp4"></video>`;
+const closingVideos = `<video class="cinematic-video closing-cinematic-video closing-video-a is-active" data-static-video="closing-a" muted playsinline webkit-playsinline preload="metadata" tabindex="-1" aria-hidden="true" disablepictureinpicture controlslist="nodownload noplaybackrate nofullscreen"><source src="/assets/video/closing-architecture.mp4" type="video/mp4"></video><video class="cinematic-video closing-cinematic-video closing-video-b" data-static-video="closing-b" muted playsinline webkit-playsinline preload="metadata" tabindex="-1" aria-hidden="true" disablepictureinpicture controlslist="nodownload noplaybackrate nofullscreen"><source src="/assets/video/closing-architecture.mp4" type="video/mp4"></video>`;
+
+const withCinematicRuntime = html => {
+  let out = html.replace(
+    '</head>',
+    '<link rel="stylesheet" href="/assets/video-enhancements.css"></head>'
+  );
+  out = out.replace(
+    '<div class="hero-visual" aria-hidden="true">',
+    `<div class="hero-visual" aria-hidden="true">${heroVideo}`
+  );
+  out = out.replace(
+    '<section class="closing">',
+    `<section class="closing">${closingVideos}`
+  );
+  return out.replace(
+    '</body>',
+    '<script src="/assets/ambient-video-runtime.js" defer></script></body>'
+  );
+};
 
 await fs.rm(dist, { recursive:true, force:true });
 await fs.mkdir(path.join(dist,'assets'), { recursive:true });
