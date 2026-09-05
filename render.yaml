@@ -34,13 +34,11 @@ services:
     envVars:
       - key: SITE_URL
         sync: false
-      - key: JOIN_FORM_ENDPOINT
+      - key: WEB3FORMS_ACCESS_KEY
         sync: false
-      - key: SPONSOR_FORM_ENDPOINT
+      - key: GOATCOUNTER_ENDPOINT
         sync: false
       - key: PRIVACY_EMAIL
         sync: false
       - key: PRIVACY_CONTROLLER
-        sync: false
-      - key: PLAUSIBLE_DOMAIN
         sync: false
