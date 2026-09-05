@@ -5,6 +5,87 @@
   const clamp = (n,min=0,max=1) => Math.max(min,Math.min(max,n));
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const finePointer = matchMedia('(pointer:fine)').matches;
+  const saveData = Boolean(navigator.connection?.saveData);
+
+  // Load optional cinematic enhancement styles. The site remains fully usable if
+  // the video assets are absent or the stylesheet cannot be loaded.
+  const cinematicStyles = document.createElement('link');
+  cinematicStyles.rel = 'stylesheet';
+  cinematicStyles.href = '/assets/video-enhancements.css';
+  document.head.appendChild(cinematicStyles);
+
+  function buildVideo({className, src, preload='metadata', loop=false, scrub=false}) {
+    if (reduceMotion || saveData) return null;
+    const video = document.createElement('video');
+    video.className = `cinematic-video ${className}`;
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+    video.setAttribute('muted','');
+    video.setAttribute('playsinline','');
+    video.setAttribute('webkit-playsinline','');
+    video.preload = preload;
+    if (loop) video.loop = true;
+    if (scrub) video.dataset.scrubVideo = 'true';
+    const source = document.createElement('source');
+    source.src = src;
+    source.type = 'video/mp4';
+    video.appendChild(source);
+    return video;
+  }
+
+  function installCinematicVideo({host, className, src, preload='metadata', loop=false, scrub=false, insert='prepend'}) {
+    if (!host) return null;
+    const video = buildVideo({className,src,preload,loop,scrub});
+    if (!video) return null;
+    if (insert === 'prepend') host.prepend(video); else host.append(video);
+    const ready = () => host.classList.add('cinematic-ready');
+    video.addEventListener('loadeddata', ready, {once:true});
+    video.addEventListener('canplay', ready, {once:true});
+    video.addEventListener('error', () => host.classList.remove('cinematic-ready'));
+    return video;
+  }
+
+  const heroVisual = $('.hero-visual');
+  const heroVideo = installCinematicVideo({
+    host: heroVisual,
+    className: 'hero-cinematic-video',
+    src: '/assets/video/hero-inference.mp4',
+    preload: 'metadata',
+    loop: true
+  });
+
+  const assemblySticky = $('.assembly-sticky');
+  const assemblyVideo = installCinematicVideo({
+    host: assemblySticky,
+    className: 'assembly-cinematic-video',
+    src: '/assets/video/datacentre-to-local.mp4',
+    preload: 'auto',
+    scrub: true
+  });
+
+  const closing = $('.closing');
+  const closingVideo = installCinematicVideo({
+    host: closing,
+    className: 'closing-cinematic-video',
+    src: '/assets/video/closing-architecture.mp4',
+    preload: 'metadata',
+    loop: true
+  });
+
+  // Ambient loops play only while close to the viewport. If autoplay is blocked,
+  // the existing CSS system remains visible as the fallback.
+  const ambientVideos = [heroVideo, closingVideo].filter(Boolean);
+  if (ambientVideos.length) {
+    const videoIO = new IntersectionObserver(entries => {
+      for (const e of entries) {
+        const video = e.target;
+        if (e.isIntersecting) video.play().catch(()=>{});
+        else video.pause();
+      }
+    }, {threshold:.04, rootMargin:'180px 0px'});
+    ambientVideos.forEach(v=>videoIO.observe(v));
+  }
 
   const header = $('[data-header]');
   const onScrollHeader = () => header?.classList.toggle('scrolled', scrollY > 18);
@@ -62,6 +143,20 @@
   const layers = $$('.assembly-layer');
   const phases = $$('.assembly-phase-rail [data-phase]');
   let ticking = false;
+  let scrubDuration = 0;
+  let scrubReady = false;
+
+  if (assemblyVideo) {
+    assemblyVideo.addEventListener('loadedmetadata', () => {
+      scrubDuration = Number.isFinite(assemblyVideo.duration) ? assemblyVideo.duration : 0;
+      scrubReady = scrubDuration > 0;
+      if (scrubReady) {
+        assemblyVideo.pause();
+        try { assemblyVideo.currentTime = Math.min(.001, scrubDuration); } catch (_) {}
+      }
+      requestAssembly();
+    });
+  }
 
   const updateAssembly = () => {
     ticking = false;
@@ -75,6 +170,16 @@
     const phase = p < .23 ? 0 : p < .48 ? 1 : p < .74 ? 2 : 3;
     phases.forEach((el,i)=>el.classList.toggle('active',i===phase));
 
+    if (scrubReady && assemblyVideo?.readyState >= 2) {
+      const target = p * Math.max(.01, scrubDuration - .04);
+      const threshold = Math.max(.025, scrubDuration / 260);
+      if (Math.abs(assemblyVideo.currentTime - target) > threshold) {
+        try { assemblyVideo.currentTime = target; } catch (_) {}
+      }
+    }
+
+    // CSS/SVG fallback animation remains live underneath until the video is ready,
+    // and is also used automatically for reduced-motion/data-saver/failure cases.
     if (cloud) {
       const fade = 1 - clamp((p-.08)/.35);
       cloud.style.opacity = String(fade);
