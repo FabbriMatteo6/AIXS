@@ -8,13 +8,13 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '..');
 const dist = path.join(root, 'dist');
 const siteUrlRaw = (process.env.SITE_URL || '').trim();
-const web3formsAccessKey = (process.env.WEB3FORMS_ACCESS_KEY || '').trim();
 const goatcounterEndpoint = (process.env.GOATCOUNTER_ENDPOINT || '').trim();
-const web3formsEndpoint = 'https://api.web3forms.com/submit';
+const joinFormUrl = (process.env.GOOGLE_JOIN_FORM_URL || '').trim();
+const partnerFormUrl = (process.env.GOOGLE_PARTNER_FORM_URL || '').trim();
 const cfg = {
   siteUrl: siteUrlRaw ? siteUrlRaw.replace(/\/$/, '') : '',
-  joinEndpoint: web3formsAccessKey ? web3formsEndpoint : '',
-  sponsorEndpoint: web3formsAccessKey ? web3formsEndpoint : '',
+  joinEndpoint: '',
+  sponsorEndpoint: '',
   privacyEmail: (process.env.PRIVACY_EMAIL || '').trim(),
   privacyController: (process.env.PRIVACY_CONTROLLER || '').trim(),
   plausibleDomain: ''
@@ -32,7 +32,7 @@ const closingVideos = `<video class="cinematic-video closing-cinematic-video clo
 const withCinematicRuntime = html => {
   let out = html.replace(
     '</head>',
-    '<link rel="stylesheet" href="/assets/video-enhancements.css"></head>'
+    '<link rel="stylesheet" href="/assets/video-enhancements.css"><link rel="stylesheet" href="/assets/external-forms.css"></head>'
   );
   out = out.replace(
     '<div class="hero-visual" aria-hidden="true">',
@@ -48,21 +48,35 @@ const withCinematicRuntime = html => {
   );
 };
 
-const withWeb3Forms = (html, lang) => {
-  if (!web3formsAccessKey) return html;
-  const accessKey = escAttr(web3formsAccessKey);
-  const joinSubject = lang === 'it' ? 'AIXS — Nuova candidatura' : 'AIXS — New contributor application';
-  const sponsorSubject = lang === 'it' ? 'AIXS — Nuova richiesta partnership' : 'AIXS — New partnership inquiry';
-  const common = `<input type="hidden" name="access_key" value="${accessKey}"><input type="hidden" name="from_name" value="AIXS website">`;
-  return html
-    .replace(
-      '<form class="aixs-form join-form reveal" data-form="join">',
-      `<form class="aixs-form join-form reveal" data-form="join">${common}<input type="hidden" name="subject" value="${escAttr(joinSubject)}"><input type="hidden" name="form_type" value="join">`
-    )
-    .replace(
-      '<form class="aixs-form sponsor-form reveal" data-form="sponsor">',
-      `<form class="aixs-form sponsor-form reveal" data-form="sponsor">${common}<input type="hidden" name="subject" value="${escAttr(sponsorSubject)}"><input type="hidden" name="form_type" value="sponsor">`
-    );
+const externalCard = ({lang, kind, url}) => {
+  const isIt = lang === 'it';
+  const join = kind === 'join';
+  const kicker = join ? '01 / APPLICATION' : '02 / PARTNERSHIP';
+  const title = join
+    ? (isIt ? 'Candidati per contribuire ad AIXS' : 'Apply to contribute to AIXS')
+    : (isIt ? 'Parliamo di una partnership' : 'Start a partnership conversation');
+  const body = join
+    ? (isIt ? 'Il modulo richiede circa 2–3 minuti e si apre in una nuova scheda. Non servono credenziali formali: ci interessa capire cosa vuoi esplorare o costruire.' : 'The form takes about 2–3 minutes and opens in a new tab. There is no formal credential gate: we want to understand what you would like to explore or build.')
+    : (isIt ? 'Condividi in circa 3 minuti il tipo di supporto o collaborazione che vuoi esplorare. Il modulo si apre in una nuova scheda.' : 'Share in about 3 minutes what kind of support or collaboration you want to explore. The form opens in a new tab.');
+  const cta = join
+    ? (isIt ? 'Apri il modulo di candidatura' : 'Open application form')
+    : (isIt ? 'Apri il modulo partnership' : 'Open partnership form');
+  const event = join ? 'join_form_open' : 'partner_form_open';
+  const href = url ? escAttr(url) : '#';
+  const disabled = url ? '' : ' aria-disabled="true"';
+  const target = url ? ' target="_blank" rel="noopener noreferrer"' : '';
+  const note = url
+    ? (isIt ? 'Gestito con Google Forms · si apre in una nuova scheda' : 'Handled with Google Forms · opens in a new tab')
+    : (isIt ? 'Modulo non ancora configurato' : 'Form not configured yet');
+  return `<div class="aixs-form external-form-card reveal"><div class="form-head"><span>${kicker}</span><h3>${title}</h3><p>${body}</p></div><div class="external-form-actions"><a class="btn btn-primary track-click external-form-link" data-event="${event}" href="${href}"${target}${disabled}>${cta} <span>↗</span></a><p>${note}</p></div></div>`;
+};
+
+const withGoogleForms = (html, lang) => {
+  let out = html
+    .replace(/<form class="aixs-form join-form reveal" data-form="join">[\s\S]*?<\/form>/, externalCard({lang, kind:'join', url:joinFormUrl}))
+    .replace(/<form class="aixs-form sponsor-form reveal" data-form="sponsor">[\s\S]*?<\/form>/, externalCard({lang, kind:'partner', url:partnerFormUrl}))
+    .replace(/<button type="button" class="support-type"[^>]*>([\s\S]*?)<\/button>/g, '<div class="support-type support-type-static">$1</div>');
+  return out;
 };
 
 const withGoatCounter = html => {
@@ -78,7 +92,17 @@ const withGoatCounter = html => {
   );
 };
 
-const preparePage = c => withGoatCounter(withCinematicRuntime(withWeb3Forms(renderPage(c, cfg), c.lang)));
+const preparePage = c => withGoatCounter(withCinematicRuntime(withGoogleForms(renderPage(c, cfg), c.lang)));
+
+const preparePrivacy = c => {
+  let html = renderPrivacy(c, cfg);
+  html = html
+    .replace(/<section><h2>Launch note<\/h2><p>Complete the provider, retention policy and controller details before public launch\.<\/p><\/section>/, '')
+    .replace(/<section><h2>Nota<\/h2><p>Completa provider, retention policy e dettagli del titolare prima del lancio pubblico\.<\/p><\/section>/, '')
+    .replace('Forms collect the information you provide voluntarily plus basic campaign attribution.', 'Application and partnership responses are collected through Google Forms. AIXS also uses privacy-friendly aggregate website analytics through GoatCounter.')
+    .replace('I moduli raccolgono i dati inseriti volontariamente e i parametri di attribuzione della visita.', 'Le candidature e le richieste di partnership vengono raccolte tramite Google Forms. AIXS utilizza inoltre statistiche aggregate e orientate alla privacy tramite GoatCounter.');
+  return html;
+};
 
 await fs.rm(dist, { recursive:true, force:true });
 await fs.mkdir(path.join(dist,'assets'), { recursive:true });
@@ -89,8 +113,8 @@ await fs.cp(path.join(root,'src','assets'), path.join(dist,'assets'), { recursiv
 
 await fs.writeFile(path.join(dist,'index.html'), preparePage(content.en));
 await fs.writeFile(path.join(dist,'it','index.html'), preparePage(content.it));
-await fs.writeFile(path.join(dist,'privacy','index.html'), renderPrivacy(content.en, cfg));
-await fs.writeFile(path.join(dist,'it','privacy','index.html'), renderPrivacy(content.it, cfg));
+await fs.writeFile(path.join(dist,'privacy','index.html'), preparePrivacy(content.en));
+await fs.writeFile(path.join(dist,'it','privacy','index.html'), preparePrivacy(content.it));
 await fs.writeFile(path.join(dist,'404.html'), preparePage(content.en));
 
 const robots = cfg.siteUrl
@@ -106,7 +130,8 @@ if (cfg.siteUrl) {
 
 const launchCheck = [
   ['SITE_URL', cfg.siteUrl],
-  ['WEB3FORMS_ACCESS_KEY', web3formsAccessKey],
+  ['GOOGLE_JOIN_FORM_URL', joinFormUrl],
+  ['GOOGLE_PARTNER_FORM_URL', partnerFormUrl],
   ['PRIVACY_EMAIL', cfg.privacyEmail],
   ['PRIVACY_CONTROLLER', cfg.privacyController]
 ];
