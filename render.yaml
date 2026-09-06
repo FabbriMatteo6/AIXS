@@ -34,7 +34,9 @@ services:
     envVars:
       - key: SITE_URL
         sync: false
-      - key: WEB3FORMS_ACCESS_KEY
+      - key: GOOGLE_JOIN_FORM_URL
+        sync: false
+      - key: GOOGLE_PARTNER_FORM_URL
         sync: false
       - key: GOATCOUNTER_ENDPOINT
         sync: false
