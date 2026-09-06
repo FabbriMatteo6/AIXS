@@ -17,16 +17,17 @@ npx serve dist
 The static generator reads these environment variables during build:
 
 - `SITE_URL`
-- `WEB3FORMS_ACCESS_KEY`
+- `GOOGLE_JOIN_FORM_URL`
+- `GOOGLE_PARTNER_FORM_URL`
 - `GOATCOUNTER_ENDPOINT` (optional analytics)
 - `PRIVACY_EMAIL`
 - `PRIVACY_CONTROLLER`
 
-### Web3Forms
+### Google Forms
 
-AIXS submits both the contributor and partnership forms to `https://api.web3forms.com/submit`. The build injects `WEB3FORMS_ACCESS_KEY` into both forms, while adding a different subject and `form_type` value so the submissions remain easy to distinguish.
+AIXS keeps the public landing page static and sends contributor applications and partnership requests to two separate Google Forms. Set `GOOGLE_JOIN_FORM_URL` and `GOOGLE_PARTNER_FORM_URL` to the published responder links copied from Google Forms.
 
-The access key is necessarily present in the generated client-side HTML; treat it as a form-routing identifier, not as a server secret.
+The landing page opens each form in a new tab and tracks the outbound CTA click before the visitor leaves AIXS. Google Forms handles the submitted responses and can store them in linked Google Sheets.
 
 ### GoatCounter
 
@@ -36,7 +37,7 @@ Set `GOATCOUNTER_ENDPOINT` to the endpoint shown by your GoatCounter site, for e
 https://your-code.goatcounter.com/count
 ```
 
-The build injects GoatCounter's pageview script. `goatcounter-bridge.js` also forwards AIXS conversion events such as CTA clicks, form starts, successful submissions, and submission errors as GoatCounter events.
+The build injects GoatCounter's pageview script. `goatcounter-bridge.js` also forwards AIXS interaction events such as CTA clicks and research interactions as GoatCounter events.
 
 The repository-level `render.yaml` deploys this app from `apps/website/`.
 
