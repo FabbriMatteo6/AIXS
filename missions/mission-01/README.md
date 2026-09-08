@@ -1,30 +1,107 @@
-# Mission 01 — Establish the Baseline
+# Mission 01 — Establish the Measured Frontier
 
 ## Objective
 
-Establish a reproducible local baseline for a frontier-class open-weight Mixture-of-Experts model on clearly documented consumer hardware before claiming any cross-layer optimization breakthrough.
+Determine which current frontier-class open-weight sparse model offers the strongest **capability × local feasibility** opportunity, then establish the lowest reproducible complete-system cost that makes it genuinely interactive locally.
 
-The exact model and reference hardware set are intentionally undecided. Selecting them is part of the mission.
+Mission 01 does **not** assume the winning model, runtime, CPU/GPU topology, memory technology or optimization technique in advance.
 
-## Workstreams
+The provisional Breakthrough Challenge is:
 
-1. **Model selection** — choose candidates using explicit quality, accessibility, reproducibility and hardware-fit criteria.
-2. **Hardware selection** — define a small reference set while still accepting heterogeneous exploratory and replication machines.
-3. **Reference behavior** — document hosted/reference quality and behavior without assuming local parity.
-4. **Local baseline** — run the strongest practical open local stack.
-5. **Measurement** — quality, TTFT, tokens/sec, RAM/VRAM, storage I/O and energy where feasible.
-6. **Optimization** — test one hypothesis at a time across the five pillars.
-7. **Publication** — preserve method, results, failures and reproducibility metadata.
+> **≥30 raw target-model decode tok/s after genuinely occupying ≥128K context on a complete, reproducibly purchasable ≤€2,000 local system, while passing a frozen source-lineage capability gate.**
+
+This is a research objective, not a promise.
+
+## Immediate model-selection challenge
+
+- **DeepSeek-V4-Flash-0731** — reproduction anchor: strong current systems evidence and mature hybrid inference paths.
+- **Qwen3.8-Flash-Next** — target challenger: much smaller active expert working set and promising local results, but newer runtime/model maturity and different license.
+- **GLM-5.3-Flash** — later portability/reference model.
+- **Kimi K3** — stress / negative control.
+
+The final primary model is frozen only after the selection experiment and capability gate.
+
+## Research loop
+
+```text
+model / representation
+        ↓
+exact active work + traffic
+        ↓
+subsystem ceilings
+        ↓
+measured end-to-end critical path
+        ↓
+largest exploitable gap
+        ↓
+one intervention
+        ↓
+re-measure capability + latency + cost
+```
+
+## First experiments
+
+Mission 01 begins with three evidence-building experiments before opening broader optimization tracks:
+
+1. **Model/artifact challenge** — V4-Flash versus Qwen3.8-Flash-Next: exact artifact/tensor accounting, active-working-set traces, capability screening and reproducible cost/capacity envelope.
+2. **CPU expert roofline** — replay the target expert workload on accessible high-channel CPU systems; measure logical payload throughput, physical memory traffic, instruction/kernel limits and 1P/2P scaling where access permits.
+3. **Occupied-context end-to-end reproduction** — run actual 4K, 32K and ≥128K ingested contexts and decompose raw decode, prefill, TTFT, CPU expert, GPU serial, synchronization, memory and PCIe behavior.
+
+Only after those results should the mission open one additional optimization path such as representation tuning, a targeted kernel/platform change, cache, prefill/prefix work or another socket.
+
+## Measurement rules
+
+A long-context claim must distinguish:
+
+- configured/allocated context capacity;
+- prompt tokens actually ingested;
+- tokens retained at decode start;
+- prefix tokens reused;
+- tokens generated during measurement.
+
+A performance claim must distinguish:
+
+- cold prefill;
+- cold TTFT;
+- warm/prefix-reuse TTFT;
+- **raw target-model decode tok/s**;
+- speculative/MTP **emitted tok/s**.
+
+Where relevant, experiments should also report:
+
+- logical expert bytes/token;
+- physical DRAM traffic and matched reference bandwidth;
+- CPU expert time/token;
+- GPU serial and total time/token;
+- synchronization and overlap;
+- PCIe/storage traffic;
+- RAM/VRAM peak footprint;
+- power/energy;
+- dated complete-system replacement cost.
+
+See [`../../docs/envelope.md`](../../docs/envelope.md).
+
+## Operating constraints
+
+- One active mission objective.
+- Maximum **two engineering tracks** in parallel after the baseline experiments.
+- Reuse and instrument upstream projects before creating AIXS-specific runtime code.
+- A negative or falsifying result is a valid mission result.
+- Do not purchase exotic hardware before an experiment shows why it is required.
+- Quantization/representation changes that preserve the model graph may be tested with quality gates; structural model changes are a separate, evidence-triggered track.
 
 ## Exit criteria
 
-- [ ] Model candidate selected and decision recorded.
-- [ ] Reference hardware set selected and decision recorded.
-- [ ] Baseline protocol frozen for the first comparison series.
-- [ ] At least one complete baseline experiment published.
-- [ ] At least one independent or cross-machine replication attempted.
-- [ ] Initial optimization experiments published with before/after evidence.
-- [ ] Mission report and reproducible demo/method published.
+- [ ] Primary source-model lineage and representation selected with alternatives documented.
+- [ ] Fast and release quality/capability gates frozen.
+- [ ] Baseline protocol frozen for occupied-context comparisons.
+- [ ] Exact active-work / tensor / memory envelope documented for the primary model.
+- [ ] CPU expert roofline measured on at least one relevant CPU topology.
+- [ ] At least one complete occupied-context end-to-end experiment published.
+- [ ] Complete-system cost methodology and at least one reproducible replacement-cost basket published.
+- [ ] At least one independent or cross-machine reproduction attempted.
+- [ ] One evidence-earned intervention tested with before/after evidence, or a conclusive negative result published.
+- [ ] Mission report states explicitly whether the current path is below, near or beyond the frozen Breakthrough envelope.
 
 ## Documents
 
@@ -32,6 +109,10 @@ The exact model and reference hardware set are intentionally undecided. Selectin
 - [`hardware-selection.md`](hardware-selection.md)
 - [`baseline-protocol.md`](baseline-protocol.md)
 - [`decisions.md`](decisions.md)
+- [`../../docs/envelope.md`](../../docs/envelope.md)
+- [`../../docs/quality-protocol.md`](../../docs/quality-protocol.md)
+- [`../../docs/inherited-results.md`](../../docs/inherited-results.md)
+- [`../../docs/upstream-projects.md`](../../docs/upstream-projects.md)
 
 ## Experiments
 
