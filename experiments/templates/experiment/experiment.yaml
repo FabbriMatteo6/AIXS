@@ -1,4 +1,4 @@
-schema_version: "0.1"
+schema_version: "0.2"
 experiment_id: "M01-E000"
 mission: "mission-01"
 title: "Replace with a concise experiment title"
@@ -6,30 +6,85 @@ status: "planned"
 hypothesis: "State the falsifiable or testable hypothesis."
 hardware_profile: "registry/hardware/profiles/replace-me.yaml"
 hardware_role: "exploratory"
+
 model:
   name: "TBD"
   source: ""
   revision: ""
+  license: null
   representation: ""
+  conversion_tool: null
+  conversion_revision: null
+  artifact_hashes: []
+  architecture_modified: false
+
 software:
   upstream_repository: ""
   upstream_commit: ""
-  aixs_code_path: ""
-  os: ""
-  drivers: ""
+  aixs_code_path: null
+  aixs_patch_hash: null
+  os: null
+  kernel: null
+  drivers: null
+  build_flags: null
+
 workload:
   benchmark: ""
-  prompts_or_dataset: ""
-  context_tokens: null
-  generation_tokens: null
+  prompts_or_dataset: null
+  context:
+    capacity_tokens: null
+    ingested_tokens: null
+    retained_tokens: null
+    reused_tokens: null
+    generated_tokens: null
   repetitions: null
+  concurrency: 1
+
 measurements:
-  quality: []
-  ttft_ms: null
-  generation_tokens_per_second: null
+  quality_gate: []
+  cold_load_s: null
+  cold_ttft_s: null
+  warm_ttft_s: null
+  prefill_tokens_per_second: null
+  raw_decode_tokens_per_second: null
+  emitted_tokens_per_second: null
+  draft_acceptance: null
+
+  logical_expert_bytes_per_token: null
+  dram_bytes_per_token: null
+  dram_achieved_gbs: null
+  matched_read_reference_gbs: null
+  stream_reference_gbs: null
+  remote_numa_bytes_per_token: null
+  pcie_h2d_bytes_per_token: null
+  pcie_d2h_bytes_per_token: null
+
+  cpu_expert_ms_per_token: null
+  gpu_serial_ms_per_token: null
+  gpu_total_ms_per_token: null
+  sync_ms_per_token: null
+  overlap_ms_per_token: null
+
+  routing_entropy: null
+  expert_cache_hit_rate: null
   ram_peak_gb: null
   vram_peak_gb: null
-  storage_read_gb: null
-  energy_wh: null
+  wall_power_w: null
+  energy_j_per_token: null
+
+  research_cash_spent_eur: null
+  replacement_bom_eur: null
+  bom_price_date: null
+  bom_region: null
+  bom_condition: null
+  bom_sources: []
+
+  measurement_metadata:
+    method: null
+    sample_count: null
+    uncertainty: null
+    same_session_ab: null
+    missing_value_notes: []
+
 artifacts: []
 notes: ""
