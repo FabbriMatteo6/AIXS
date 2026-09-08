@@ -12,169 +12,183 @@
 
 <p align="center">
   <a href="missions/mission-01/README.md"><strong>Explore Mission 01</strong></a> ·
+  <a href="docs/envelope.md">AIXS Envelope</a> ·
   <a href="docs/research-map.md">Research map</a> ·
   <a href="CONTRIBUTING.md">Contribute</a> ·
-  <a href="https://github.com/FabbriMatteo6/AIXS/discussions">Join the discussion</a> ·
-  <a href="docs/it/README.md">Italiano</a>
+  <a href="https://github.com/FabbriMatteo6/AIXS/discussions">Join the discussion</a>
 </p>
 
 ---
 
 ## Frontier AI should fit on your machine.
 
-**AIXS** is a community-led open research initiative exploring how frontier-class AI models can run locally on affordable consumer hardware while preserving as much of their original intelligence and performance as technically possible.
+**AIXS** is a community-led open research initiative investigating how far frontier-class open-weight AI can be pushed on affordable local hardware.
 
-The central bet is simple: the bottleneck is not one layer. **Model architecture, orchestration, runtime, operating system, memory movement and hardware are coupled constraints.** AIXS treats them as one optimization surface.
+The project does not assume that one layer — model, runtime, OS, memory or accelerator — is the answer. It measures the full per-token critical path, identifies the current bottleneck, and tests only interventions with enough measured headroom to matter.
 
-Today, the dominant path is:
+> **Not a finished product. Not a benchmark claim. A reproducible research challenge.**
+
+## Mission 01 — Establish the Measured Frontier
+
+Mission 01 asks two linked questions:
+
+1. **Model frontier:** which current open-weight sparse model provides the strongest retained capability for its active inference cost?
+2. **Systems frontier:** what is the lowest reproducible complete-system cost that makes that model genuinely interactive locally?
+
+The immediate selection challenge is:
+
+- **DeepSeek-V4-Flash-0731** — reproduction anchor;
+- **Qwen3.8-Flash-Next** — target challenger;
+- **GLM-5.3-Flash** — later portability/reference model;
+- **Kimi K3** — stress / negative-control model.
+
+The provisional Breakthrough Challenge is:
+
+> **≥30 raw target-model decode tok/s after genuinely occupying ≥128K context on a complete, reproducibly purchasable ≤€2,000 local system, while passing a frozen source-lineage capability gate.**
+
+This is a research objective, not a promise. Every result must separate raw target-model decode from speculative/emitted throughput and report the actual context occupancy.
+
+Mission 01 starts with measurement, not architecture selection:
 
 ```text
-Frontier model → giant datacentre → API → user
+source model / representation
+          ↓
+active work + memory traffic
+          ↓
+subsystem ceilings
+          ↓
+actual token critical path
+          ↓
+largest exploitable gap
+          ↓
+one intervention
+          ↓
+re-measure quality + cost + latency
 ```
-
-AIXS investigates a different path:
-
-```text
-Model → Harness → Software → OS → Hardware → Your machine
-```
-
-This repository is the main AIXS research monorepo. It contains missions, experiments, pillar-specific research and code, reproducibility metadata, hardware profiles, benchmarks, integration work, and the public website.
-
-> **Not a finished product. Not a benchmark claim. A research challenge worth attacking together.**
-
-## Five interlocking research pillars
-
-| Pillar | Question | Working area |
-| --- | --- | --- |
-| **1. Model** | What can we change in architecture, quantization, sparsity, expert sharing and loading without losing the capability we care about? | [`research/model/`](research/model/) |
-| **2. Harness / Orchestration** | How do routing, cache, context, batching, speculation and scheduling reduce wasted work around the model? | [`research/harness/`](research/harness/) |
-| **3. Software / Runtime** | How should kernels, paging, formats, prefetching and distributed execution move weights and compute? | [`research/software/`](research/software/) |
-| **4. OS / System Layer** | Can memory, I/O, scheduling, power and topology be managed more intelligently for local AI? | [`research/os/`](research/os/) |
-| **5. Hardware** | How far can consumer GPUs, Apple Silicon, heterogeneous systems and memory-centric designs be pushed? | [`research/hardware/`](research/hardware/) |
-
-The pillars are **knowledge and ownership areas**. The actual execution units are **missions**.
-
-## Mission 01 — Establish the Baseline
-
-Before attempting a breakthrough, we need a starting point that is hard to argue with.
-
-Mission 01 will select a frontier-class open-weight Mixture-of-Experts candidate and a clearly defined reference hardware set, establish hosted/reference behavior, run the strongest practical local baseline, and publish reproducible measurements.
-
-The exact model and reference hardware are **deliberately undecided**. Their selection is part of the research.
-
-### Exit criteria
-
-- [ ] Select and document the model candidate using explicit criteria.
-- [ ] Select a reference hardware set while still allowing heterogeneous exploratory machines.
-- [ ] Define reference quality and behavior checks.
-- [ ] Reproduce the strongest practical local baseline.
-- [ ] Measure quality, TTFT, tokens/sec, memory, storage I/O and energy where feasible.
-- [ ] Test optimizations one hypothesis at a time with before/after evidence.
-- [ ] Publish method, results, failures and a reproducible demo/report.
 
 Start here: **[`missions/mission-01/`](missions/mission-01/)**.
+
+## The AIXS Envelope
+
+AIXS aims to publish more than tokens/sec. A useful local-inference result should make the limiting resource visible.
+
+For each model / representation / runtime / hardware combination, AIXS tracks where practical:
+
+- source capability and quality gate;
+- allocated **and actually occupied** context;
+- cold prefill and TTFT;
+- warm/prefix-reuse TTFT;
+- raw target-model decode tok/s;
+- emitted/speculative tok/s;
+- logical expert bytes/token and measured memory traffic;
+- CPU expert, GPU serial, synchronization and overlap time/token;
+- RAM/VRAM/PCIe/storage behavior;
+- wall power and energy/token;
+- dated complete-system replacement cost.
+
+See [`docs/envelope.md`](docs/envelope.md) and [`docs/methodology.md`](docs/methodology.md).
+
+## Research domains
+
+AIXS keeps five interlocking domains as knowledge areas. They are **not five parallel roadmaps**; missions decide what gets worked on now.
+
+| Domain | Question | Working area |
+| --- | --- | --- |
+| **Model** | Which representation or structural changes reduce active work without unacceptable capability loss? | [`research/model/`](research/model/) |
+| **Harness / Orchestration** | How do context reuse, batching, speculation, routing and scheduling reduce wasted work? | [`research/harness/`](research/harness/) |
+| **Software / Runtime** | Which kernels, formats, placement and execution policies move useful work fastest? | [`research/software/`](research/software/) |
+| **OS / System Layer** | How should memory, I/O, affinity, NUMA and power be managed? | [`research/os/`](research/os/) |
+| **Hardware** | Which affordable memory/compute topologies offer the best usable performance per euro? | [`research/hardware/`](research/hardware/) |
 
 ## How AIXS works
 
 AIXS separates three things that are often mixed together:
 
-- **Missions** define what the community is trying to accomplish now.
-- **Research pillars** accumulate hypotheses, code, knowledge and open problems for each system layer.
-- **Experiments** are the evidence: a reproducible record of exactly what was tested, where, and what happened.
+- **Missions** define the current objective and decision boundary.
+- **Research domains** accumulate reusable hypotheses, code and knowledge.
+- **Experiments** are the evidence: reproducible records of what was tested and what happened.
 
-A valid experiment does **not** need a positive result. Negative, failed and inconclusive results are first-class contributions when they are reproducible and documented clearly.
+A failed or inconclusive result is a valid contribution when it is reproducible and changes a decision.
 
 ### Experiment status vocabulary
 
 | Status | Meaning |
 | --- | --- |
-| `planned` | The hypothesis and method are defined, but the run has not started. |
-| `running` | Data is actively being collected or reproduced. |
-| `completed` | The planned experiment finished and its evidence is recorded. |
-| `failed` | The experiment ran, but the tested approach did not work as intended. This is a valid negative result. |
-| `inconclusive` | Evidence was insufficient or contradictory; no conclusion is claimed. |
-| `superseded` | A newer experiment replaces this one while preserving the historical record. |
-
-The canonical experiment schema starts at **`schema_version: "0.1"`** and is intentionally versioned so the methodology can evolve without rewriting history.
+| `planned` | Hypothesis and method defined; run not started. |
+| `running` | Data being collected or reproduced. |
+| `completed` | Planned experiment finished and evidence recorded. |
+| `failed` | The tested approach did not work as intended; valid negative result. |
+| `inconclusive` | Evidence insufficient or contradictory. |
+| `superseded` | A newer experiment replaces it while preserving history. |
 
 Read [`experiments/README.md`](experiments/README.md) and [`docs/methodology.md`](docs/methodology.md).
 
 ## Reproducibility before rhetoric
 
-AIXS favors measured evidence over estimates whenever measurement is practical. An experiment should make it possible for another contributor to understand:
+A completed inference experiment should make it possible to reconstruct:
 
-1. what hardware and OS were used;
-2. which exact model weights, revision and quantization were tested;
-3. which runtime/upstream commit was used;
-4. what workload, prompts, context and settings were used;
-5. what quality/correctness checks were applied;
-6. TTFT and generation throughput;
-7. RAM/VRAM/storage footprint and I/O where relevant;
-8. energy/power measurements where feasible;
-9. what changed versus the baseline;
-10. what failed, surprised us, or remains uncertain.
+1. exact hardware, NUMA topology and memory population;
+2. exact source model, representation and conversion provenance;
+3. exact runtime/upstream commit and AIXS patch;
+4. allocated, ingested, retained, reused and generated token counts;
+5. correctness and capability checks;
+6. prefill, TTFT, raw decode and emitted throughput;
+7. RAM/VRAM/PCIe/storage behavior relevant to the hypothesis;
+8. power and dated complete-system economics where feasible;
+9. uncertainty / repetitions and the measurement method;
+10. failures, null results and assumptions.
 
-Large model weights, traces and datasets should stay outside Git. The repository stores **the reproducibility contract**: configs, small results, hashes, exact revisions, summaries and links to external artifacts.
+Large weights, traces and datasets stay outside Git. The repository stores the **reproducibility contract**: configs, hashes, small results, exact revisions, summaries and artifact links.
 
 ## Repository map
 
 ```text
 AIXS/
-├── apps/website/             # Public AIXS website
-├── missions/                 # Execution units and current objectives
+├── apps/website/
+├── missions/
 │   └── mission-01/
-├── research/                 # Pillar knowledge + early implementation code
+├── research/
 │   ├── model/
 │   ├── harness/
 │   ├── software/
 │   ├── os/
 │   └── hardware/
-├── experiments/              # Reproducible experimental record
+├── experiments/
 │   ├── schema/
 │   ├── templates/
 │   └── mission-01/
-├── registry/hardware/        # Heterogeneous machine profiles
-├── benchmarks/               # Shared workloads and quality methods
-├── adapters/                 # AIXS integration code for upstream projects
-├── patches/                  # Reviewable patches against pinned upstream revisions
-├── tools/                    # Shared repository/research tooling
-├── docs/                     # Architecture, methodology and research map
-└── .github/                  # Lean contribution templates + CI
+├── registry/hardware/
+├── benchmarks/
+├── adapters/
+├── patches/
+├── tools/
+└── docs/
 ```
-
-See [`docs/architecture.md`](docs/architecture.md) for the design rules behind the structure.
 
 ## Contribute
 
-You do not need to arrive with a new architecture or a research paper.
+High-value contributions right now include:
 
-Useful contributions include:
+- reproducing DeepSeek-V4-Flash or Qwen3.8-Flash-Next on a documented machine;
+- providing borrowed access to high-channel EPYC/Xeon or 24–32 GB GPU systems;
+- measuring CPU expert throughput, memory traffic or GPU critical-path timing;
+- building occupied-context / prefix-reuse workloads;
+- improving the quality gate;
+- documenting an upstream result or a negative reproduction.
 
-- reproducing one result on one machine;
-- registering a hardware profile;
-- testing a quantization, routing, paging or scheduling hypothesis;
-- implementing an adapter or small patch against a pinned upstream revision;
-- improving a benchmark or quality check;
-- documenting a negative result;
-- reviewing another experiment for reproducibility;
-- mapping relevant public research.
-
-Start with [`CONTRIBUTING.md`](CONTRIBUTING.md). For research questions and ideas, use **GitHub Discussions**. For concrete work, use **Issues** and **Pull Requests**.
+Start with [`CONTRIBUTING.md`](CONTRIBUTING.md). Use Discussions for research questions and Issues/PRs for concrete experiments.
 
 ## What AIXS is — and is not
 
 | AIXS is | AIXS is not |
 | --- | --- |
 | Open, evidence-first systems research | A claim that frontier AI already runs perfectly on cheap hardware |
-| Community-led and reproducibility-oriented | A founder-centric product repository |
-| Willing to publish failed and negative results | A benchmark leaderboard without methodology |
-| Open to experienced researchers and motivated beginners | A promise that every future component must use one license or business model |
+| Focused on capability-per-euro and usability | A checkpoint-size contest |
+| Upstream-first | A new runtime unless evidence requires one |
+| Willing to publish failures | A benchmark leaderboard without methodology |
+| Architecture-agnostic until measurement | A predetermined NUMA/GPU/pruning strategy |
 
-## Website
-
-The public website is **coming online**. Its source lives in [`apps/website/`](apps/website/).
-
-## License and attribution
+## License
 
 Original AIXS code and repository material are released under the **Apache License 2.0** unless a file or imported component states otherwise. Third-party projects, papers and patches retain their respective licenses and attribution requirements.
 
