@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/FabbriMatteo6/AIXS/experiments/schema/v0.2/experiment.schema.json",
+  "title": "AIXS experiment metadata v0.2",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "experiment_id",
+    "mission",
+    "title",
+    "status",
+    "hypothesis",
+    "hardware_profile",
+    "model",
+    "software",
+    "workload",
+    "measurements",
+    "artifacts"
+  ],
+  "properties": {
+    "schema_version": {"const": "0.2"},
+    "experiment_id": {"type": "string", "pattern": "^M[0-9]{2}-E[0-9]{3}$"},
+    "mission": {"type": "string"},
+    "title": {"type": "string"},
+    "status": {"enum": ["planned", "running", "completed", "failed", "inconclusive", "superseded"]},
+    "hypothesis": {"type": "string"},
+    "hardware_profile": {"type": "string"},
+    "hardware_role": {"enum": ["reference", "exploratory", "replication", "access-only"]},
+    "model": {
+      "type": "object",
+      "required": ["name", "source", "revision", "representation"],
+      "properties": {
+        "name": {"type": "string"},
+        "source": {"type": "string"},
+        "revision": {"type": "string"},
+        "license": {"type": ["string", "null"]},
+        "representation": {"type": "string"},
+        "conversion_tool": {"type": ["string", "null"]},
+        "conversion_revision": {"type": ["string", "null"]},
+        "artifact_hashes": {"type": "array", "items": {"type": "string"}},
+        "architecture_modified": {"type": "boolean", "default": false}
+      },
+      "additionalProperties": true
+    },
+    "software": {
+      "type": "object",
+      "required": ["upstream_repository", "upstream_commit"],
+      "properties": {
+        "upstream_repository": {"type": "string"},
+        "upstream_commit": {"type": "string"},
+        "aixs_code_path": {"type": ["string", "null"]},
+        "aixs_patch_hash": {"type": ["string", "null"]},
+        "os": {"type": ["string", "null"]},
+        "kernel": {"type": ["string", "null"]},
+        "drivers": {"type": ["string", "null"]},
+        "build_flags": {"type": ["string", "null"]}
+      },
+      "additionalProperties": true
+    },
+    "workload": {
+      "type": "object",
+      "required": ["benchmark", "context"],
+      "properties": {
+        "benchmark": {"type": "string"},
+        "prompts_or_dataset": {"type": ["string", "null"]},
+        "context": {
+          "type": "object",
+          "required": ["capacity_tokens", "ingested_tokens", "retained_tokens", "reused_tokens", "generated_tokens"],
+          "properties": {
+            "capacity_tokens": {"type": ["integer", "null"], "minimum": 0},
+            "ingested_tokens": {"type": ["integer", "null"], "minimum": 0},
+            "retained_tokens": {"type": ["integer", "null"], "minimum": 0},
+            "reused_tokens": {"type": ["integer", "null"], "minimum": 0},
+            "generated_tokens": {"type": ["integer", "null"], "minimum": 0}
+          },
+          "additionalProperties": false
+        },
+        "repetitions": {"type": ["integer", "null"], "minimum": 1},
+        "concurrency": {"type": ["integer", "null"], "minimum": 1}
+      },
+      "additionalProperties": true
+    },
+    "measurements": {
+      "type": "object",
+      "properties": {
+        "quality_gate": {"type": "array", "items": {"type": "object"}},
+        "cold_load_s": {"type": ["number", "null"]},
+        "cold_ttft_s": {"type": ["number", "null"]},
+        "warm_ttft_s": {"type": ["number", "null"]},
+        "prefill_tokens_per_second": {"type": ["number", "null"]},
+        "raw_decode_tokens_per_second": {"type": ["number", "null"]},
+        "emitted_tokens_per_second": {"type": ["number", "null"]},
+        "draft_acceptance": {"type": ["number", "null"]},
+        "logical_expert_bytes_per_token": {"type": ["number", "null"]},
+        "dram_bytes_per_token": {"type": ["number", "null"]},
+        "dram_achieved_gbs": {"type": ["number", "null"]},
+        "matched_read_reference_gbs": {"type": ["number", "null"]},
+        "stream_reference_gbs": {"type": ["number", "null"]},
+        "remote_numa_bytes_per_token": {"type": ["number", "null"]},
+        "pcie_h2d_bytes_per_token": {"type": ["number", "null"]},
+        "pcie_d2h_bytes_per_token": {"type": ["number", "null"]},
+        "cpu_expert_ms_per_token": {"type": ["number", "null"]},
+        "gpu_serial_ms_per_token": {"type": ["number", "null"]},
+        "gpu_total_ms_per_token": {"type": ["number", "null"]},
+        "sync_ms_per_token": {"type": ["number", "null"]},
+        "overlap_ms_per_token": {"type": ["number", "null"]},
+        "routing_entropy": {"type": ["number", "null"]},
+        "expert_cache_hit_rate": {"type": ["number", "null"]},
+        "ram_peak_gb": {"type": ["number", "null"]},
+        "vram_peak_gb": {"type": ["number", "null"]},
+        "wall_power_w": {"type": ["number", "null"]},
+        "energy_j_per_token": {"type": ["number", "null"]},
+        "research_cash_spent_eur": {"type": ["number", "null"]},
+        "replacement_bom_eur": {"type": ["number", "null"]},
+        "bom_price_date": {"type": ["string", "null"]},
+        "bom_region": {"type": ["string", "null"]},
+        "bom_condition": {"type": ["string", "null"]},
+        "bom_sources": {"type": "array", "items": {"type": "string"}},
+        "measurement_metadata": {
+          "type": "object",
+          "properties": {
+            "method": {"type": ["string", "null"]},
+            "sample_count": {"type": ["integer", "null"], "minimum": 1},
+            "uncertainty": {"type": ["string", "null"]},
+            "same_session_ab": {"type": ["boolean", "null"]},
+            "missing_value_notes": {"type": "array", "items": {"type": "string"}}
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "artifacts": {"type": "array"},
+    "notes": {"type": "string"}
+  },
+  "additionalProperties": true
+}
