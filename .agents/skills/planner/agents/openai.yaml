@@ -1,0 +1,6 @@
+interface:
+  display_name: "Planner"
+  short_description: "Plan a bounded task and clarify acceptance"
+  default_prompt: "Use $planner to clarify the current task and write TASK.md and PLAN.md."
+policy:
+  allow_implicit_invocation: false

@@ -1,578 +1,223 @@
 # AIXS Project Milestones
 
-This document translates [`Vision.md`](Vision.md) into a staged execution plan.
+This is the execution plan for [Vision.md](Vision.md), revised from the [9 September adversarial review](docs/adversarial-review-2026-09-09.md). Gates determine completion; effort limits prevent indefinite planning. No implementation milestone is marked complete by this documentation update.
 
-It is intentionally **decision-gated**, not calendar-driven. A milestone is complete when its exit criteria are met, not because a date has passed.
+## Operating contract
 
-The project should avoid opening downstream work before upstream uncertainty has been resolved.
+One active coding task runs at a time. Development starts with an available consumer-class machine; bounded remote work, hardware access and contributor capacity are recorded as experiment constraints. Source/price research may proceed alongside waiting experiments.
 
-## Project flow
+Public breakthrough: ≥30 raw tok/s, ≥131,072 input tokens retained at decode start, quality pass and ≤€2,000 reproducible complete-system cost. Candidate system cases: ≥25 raw tok/s within €2,000, or ≥30 within €2,500, under the same context/quality conditions. Other combinations require a recorded decision. Approximately 10 tok/s or €3,000+ means preserve the budget.
 
-```text
-M0  Freeze the challenge + method
-            ↓
-M1  Select the reference model
-            ↓
-M2  Establish subsystem rooflines
-            ↓
-M3  Reproduce occupied-context end to end
-            ↓
-M4  Select the first architecture intervention
-            ↓
-M5  Validate the architecture direction
-            ↓
-M6  Build the best ≤€2K candidate system
-            ↓
-M7  External reproduction + publish
-            ↓
-M8  Decide the next mission
-```
+Initial workload assumption: text-based repository tasks, one active agent. Visual coverage remains open until representative tasks are selected. Target models are DeepSeek-V4-Flash-Vision-Exp and Qwen3.8-Flash-Next; text Flash-0731 is a labeled control.
 
-The current active program is **Mission 01 — Establish the Measured Frontier**.
-
----
-
-# M0 — Freeze the challenge and research contract
-
-## Purpose
-
-Ensure AIXS has one stable question and one reproducibility standard before generating large amounts of benchmark data.
-
-## Deliverables
-
-- [x] Provisional Breakthrough Challenge defined.
-- [x] Evidence hierarchy defined.
-- [x] Long-context occupancy rules defined.
-- [x] Raw vs speculative throughput distinction defined.
-- [x] Complete-system cost principle defined.
-- [x] Architecture-preserving vs structural transformation distinction defined.
-- [ ] Fast capability gate frozen.
-- [ ] Release capability gate frozen.
-- [ ] Exact baseline workload prompts / context construction frozen.
-- [ ] Minimum experiment metadata schema validated with one dry run.
-
-## Exit gate
-
-M0 is complete when a new contributor can answer:
-
-1. exactly what counts as a 128K occupied run;
-2. exactly what performance number counts toward the Breakthrough Challenge;
-3. exactly what model/capability degradation is allowed;
-4. exactly what cost is included;
-5. exactly what metadata must be recorded.
-
-## Relevant files
-
-- [`Vision.md`](Vision.md)
-- [`docs/methodology.md`](docs/methodology.md)
-- [`docs/envelope.md`](docs/envelope.md)
-- [`docs/quality-protocol.md`](docs/quality-protocol.md)
-- [`experiments/`](experiments/)
-
----
-
-# M1 — Select the reference model and representation
-
-## Core question
-
-> Which current frontier-class open-weight sparse model provides the strongest retained capability for its active local-inference cost?
-
-## Initial candidates
-
-| Role | Candidate | Why it is included |
-| --- | --- | --- |
-| Reproduction anchor | DeepSeek-V4-Flash-0731 | Strong current systems evidence and mature hybrid paths. |
-| Target challenger | Qwen3.8-Flash-Next | Smaller active parameter footprint and architecture explicitly designed for efficient long-context/local execution. |
-| Later portability reference | GLM-5.3-Flash | Different architecture and useful portability test. |
-| Stress / negative control | Kimi K3 | Tests whether techniques survive much harder working-set pressure. |
-
-## Required work
-
-### M1.1 Artifact accounting
-
-For V4 and Qwen, record:
-
-- exact source revision;
-- license;
-- total parameters;
-- active parameters/token;
-- expert count and routing;
-- shared/dense tensors;
-- attention architecture;
-- native context length;
-- source representation;
-- candidate local representations;
-- disk size;
-- RAM/VRAM fit estimates;
-- runtime support status.
-
-### M1.2 Active-work accounting
-
-Estimate and then measure where possible:
-
-- logical expert bytes/token;
-- shared/dense bytes/token;
-- attention/KV cost versus context;
-- expert routing distribution;
-- repeated-expert locality;
-- representation conversion overhead.
-
-### M1.3 Capability screen
-
-Run the fast quality gate against each practical representation.
-
-## PASS criteria
-
-A candidate becomes the Mission 01 primary model when it has:
-
-- a reproducible artifact;
-- sufficient runtime maturity for meaningful experiments;
-- a representation that fits at least one accessible research topology;
-- capability retention above the frozen gate;
-- an active-work envelope with a plausible path toward interactive local inference.
-
-## KILL / deprioritize criteria
-
-Deprioritize a candidate when one of these is true:
-
-- runtime support is too immature to separate runtime bugs from architectural limits;
-- representation required for affordability fails the quality gate;
-- active work/token makes the ≤€2K challenge physically implausible without structural model changes;
-- another candidate dominates it on both capability and local feasibility.
-
-## Decision unlocked
-
-Freeze:
-
-- primary source lineage;
-- baseline representation;
-- challenger/reference lineage.
-
----
-
-# M2 — Establish subsystem rooflines
-
-## Core question
-
-> Before changing architecture, what can each relevant subsystem actually deliver on the target workload?
-
-Do not substitute vendor headline specifications for workload-specific measurements.
-
-## M2.1 CPU expert roofline
-
-Build or reuse an expert replay harness for the selected source model.
-
-Measure on accessible high-channel CPU systems:
-
-- CPU model and instruction set;
-- channels populated;
-- NUMA topology;
-- matched DRAM read reference;
-- physical DRAM traffic where counters allow;
-- logical expert payload throughput;
-- expert phase ms/token;
-- thread scaling;
-- dequantization/unpack/kernel cost;
-- 1P vs 2P only where access permits.
-
-### Key diagnostic
-
-Determine whether expert execution is primarily:
-
-- memory-bandwidth bound;
-- compute/instruction bound;
-- synchronization/threading bound;
-- NUMA/locality bound.
-
-### Gate
-
-Do **not** recommend more memory channels/sockets merely because peak bandwidth looks insufficient. Extra channels are earned only if the actual expert path is already using the existing subsystem effectively.
-
-## M2.2 GPU serial-path roofline
-
-On a supported/borrowed accelerator, measure:
-
-- mandatory GPU serial ms/token;
-- total GPU ms/token;
-- resident VRAM footprint;
-- attention/KV cost versus context;
-- PCIe traffic;
-- useful CPU/GPU overlap.
-
-For the 30 tok/s challenge, total end-to-end token time is roughly **33.3 ms/token**. The experiment should show how much of that budget is already consumed before CPU expert work and synchronization.
-
-## M2.3 Storage / representation ceiling where relevant
-
-Only if the selected representation requires streaming or frequent conversion, measure the relevant SSD/storage path separately.
-
-## Exit gate
-
-Publish a first **critical-path budget** such as:
+## Flow
 
 ```text
-GPU mandatory serial    ? ms
-CPU expert path         ? ms
-sync/unhidden overhead  ? ms
-other serial work       ? ms
-useful overlap         -? ms
------------------------------
-end-to-end              ? ms/token
+M0 Contract + evidence audit + executable fixture
+ ↓
+M1 Mac coding-agent vertical slice
+ ↓                         ↘
+M2 Target artifacts + affordable access decision
+ ↓                         → no access: bounded Mac work / wait
+M3 Target quality + occupied-context baseline
+ ↓
+M4 One bottleneck intervention, only if needed
+ ↓
+M5 Purchase or preserve-budget decision
+ ↓ qualified purchase only
+M6 Integrate and validate remote machine
+ ↓
+M7 Publish + seek independent reproduction
+ ↓
+M8 Close mission / open one evidence-earned successor
 ```
 
-No architecture intervention should be selected before this budget exists.
+M2 accounting can begin alongside M1. M3 may run on a rental. Skip M4 if an upstream baseline already qualifies. M5 may reject a candidate early. Publishing negative results does not require M6.
 
----
+## M0 — Freeze an executable research contract
 
-# M3 — Occupied-context end-to-end baseline
+**Objective:** one runnable task and valid experiment record.
 
-## Core question
+**Effort:** 6–8 hours; inherited-package audit capped at four hours.
 
-> What happens when we run the real workload, not an allocated context flag or isolated microbenchmark?
+**Included work:**
 
-## Required contexts
+- Obtain two development tasks with repository/start/final commits, original requirement, locked environment and acceptance tests. A synthetic fixture may validate infrastructure while these inputs are pending.
+- Export only the starting snapshot; exclude future Git history, final solutions and hidden tests. Confirm start fails and historical final passes the relevant acceptance checks.
+- Inventory installed Mac model IDs, representations, runtime versions, AC power and storage. Verify one small inherited result.
+- Resolve the template's schema v0.2 versus validator's v0.1-only handling; preserve old records.
+- Freeze task budgets, timing definitions, raw/speculative separation and occupied-context semantics.
+- Calibrate quality thresholds before candidate comparison. Proposed release defaults: 80% absolute task success and five-percentage-point non-inferiority margin, using one-sided 95% paired uncertainty. These remain provisional until calibrated; inadequate statistical resolution is inconclusive.
+- Reconcile subordinate mission protocols, quality documentation and inherited-results register with the revised top-level plan.
 
-At minimum:
+**Excluded:** broad runtime engineering, full benchmark corpus, purchases, schema redesign.
 
-- ~4K actually ingested;
-- ~32K actually ingested;
-- **≥128K actually ingested and retained at decode start**.
+**Acceptance:** a populated valid record passes validation and a deliberately invalid record fails; task start/final controls work; solution separation is inspectable; thresholds and task budgets have explicit status.
 
-## Required metrics
+**Manual test:** run both snapshot controls and inspect exactly what the agent can access.
 
-- cold prefill tok/s;
-- cold TTFT;
-- warm/prefix-reuse TTFT where supported;
-- raw target-model decode tok/s;
-- emitted/speculative tok/s separately;
-- actual ingested / retained / reused tokens;
-- CPU expert ms/token;
-- GPU serial and total ms/token;
-- synchronization/unhidden overhead;
-- DRAM traffic/bandwidth;
-- PCIe traffic;
-- RAM/VRAM footprint;
-- wall power;
-- dated complete-system replacement cost.
+**Known limitations:** a synthetic task does not close real-task selection; inherited results remain condition-scoped.
 
-## Baseline runtime policy
+**Exit:** M1 has an executable fixture. Keep the real-task gate open if only a synthetic fixture exists.
 
-Use the strongest practical upstream path first. Pin the exact revision.
+## M1 — Mac coding-agent vertical slice
 
-Potential upstreams include, according to model support and experiment purpose:
+**Objective:** a local model receives a task, uses tools, edits code, runs tests and produces an evaluated result.
 
-- KTransformers;
-- llama.cpp / relevant experimental upstream work;
-- other current projects documented in [`docs/upstream-projects.md`](docs/upstream-projects.md).
+**Effort:** 6–10 hours. Reassess an installation path after two working sessions without a successful request.
 
-AIXS-specific code should initially focus on instrumentation and reproducibility, not replacing the runtime.
+**Included:** one installed Qwen artifact, one serving runtime, one agent client, a thin timing/parser adapter and disposable task workspaces. Begin with short context; extend to 4K/32K within measured memory. Compare non-speculative and production mode without silently changing prefix policy. Run on AC power.
 
-## Exit gate
+**Excluded:** full DeepSeek on the initial development machine, new agent framework, new paging kernels, large cold-I/O matrices and premature 128K memory stress.
 
-M3 is complete when AIXS can state with evidence:
+**Acceptance:** one real task attempt has a valid evaluator verdict and transcript, even if the model fails the task. A successful known control demonstrates harness correctness. Record task time, model/tool time, invalid calls, human interventions, tokens, peak memory, swap and context. Repeated runs preserve fixture identity.
 
-> At 128K occupied context, the dominant current limitation is **X**, consuming approximately **Y ms/token or Z% of the critical path**, while the next-largest limitation is **W**.
+**Manual test:** trace request → tools → final diff → hidden-test verdict; confirm no solution leakage.
 
-That sentence unlocks M4.
+**Known limitations:** surrogate performance and quality do not establish target feasibility.
 
----
+**Exit:** working evaluator and Mac baseline. Do not confuse an honestly measured task failure with broken instrumentation.
 
-# M4 — Select one evidence-earned intervention
+## M2 — Target artifacts and affordable access
 
-## Rule
+**Objective:** establish exactly what can be tested within current resources.
 
-Choose the intervention with the highest expected end-to-end gain supported by the measured critical path.
+**Effort:** 6–10 hours plus one prepriced pilot; remote charges remain within the declared experiment budget.
 
-Do **not** choose based on novelty or hardware availability alone.
+**Included:**
 
-## Candidate interventions
+- Preserve M01-E001 as Vision-Exp/Qwen artifact and active-work comparison, with text Flash-0731 as control.
+- Pin source revision/license, tensor sizes, converter, representation and runtime commit. Account for routed/shared weights, lookup tables, vision, draft and context state.
+- Estimate host/GPU/disk needs including conversion expansion, temporary buffers and headroom.
+- Verify actual loading, prompt encoding, reasoning/tool parsing and selected image support. Model-card examples are not tested compatibility.
+- Price rentals including CPU/RAM/topology access, setup, downloads, storage and transfers. Start with a small pilot.
+- Prepare requirements-based hardware candidates without committing to components.
 
-Examples only:
+**Excluded:** benchmark zoo, speculative multi-GPU purchase, assuming hosted API precision equals source precision.
 
-### CPU kernel / representation path
+**Acceptance:** each target has an affordable runnable path or a documented access/compatibility gap. An affordable pilot loads one target and completes a short tool roundtrip. Failed access closes as deferred with a reopen trigger.
 
-Use when CPU expert execution is compute/instruction bound or leaves significant memory throughput unused.
+**Manual test:** inspect real allocated topology and send a request through the intended client.
 
-### Higher-bandwidth / more-channel CPU topology
+**Known limitations:** shared cloud CPU tests cannot qualify a home CPU roofline. Vision incompatibility can block Vision-Exp while another explicitly labeled target/control advances.
 
-Use when CPU expert work is demonstrably bandwidth-bound and an Amdahl-aware model predicts worthwhile end-to-end gain.
+**Exit:** supported targets enter M3; otherwise preserve funds and continue bounded evaluator work.
 
-### GPU / placement change
+## M3 — Quality and occupied-context baseline
 
-Use when GPU serial work or PCIe placement dominates.
+**Objective:** establish actual coding capability and latency before optimization.
 
-### Context / prefill / KV optimization
+**Effort:** one to two weekly cycles as access permits; obey the declared experiment budget.
 
-Use when 128K attention/KV or prefill dominates usability.
+**Included:** preserve M01-E003 for occupied end-to-end measurements and M01-E002 for targeted expert/roofline diagnostics. Begin a small E003 baseline before expanding E002 instrumentation.
 
-### Expert cache
+- Use two development tasks, then aim initially for ten distinct held-out tasks and three matched attempts per task where affordable. Freeze fixtures before representation comparison.
+- Separate same-representation correctness from frozen-source capability. Label uncertain API references as proxies.
+- Increase occupied input through 4K, 32K, approximately 65K and 131,072 tokens, with output reserve. Add 196K/256K only when justified.
+- Record cold load/prefill/TTFT, warm-turn TTFT/reuse, raw decode, separate speculative output rate, task completion time and tool errors.
+- Starting performance protocol: three independent runs per affordable rung, target 512 generated tokens, retain early EOS and run-level median/range.
+- Quantify the dominant phase. Mark unavailable counters missing; avoid overlap double-counting.
 
-Use only when routing traces predict useful cache locality after accounting for VRAM opportunity cost.
+**Excluded:** unearned kernels/cache changes, context extrapolation, procurement from configured-context results.
 
-### Architecture-preserving representation tuning
+**Acceptance:** quality is pass/fail/inconclusive under the frozen protocol; context and memory are measured; dominant latency is quantified or unresolved. Full qualification requires the 131,072-token rung. A short-context pass only unlocks the next rung.
 
-Use when bytes/token can be reduced while retaining capability.
+**Manual test:** inspect one full task and one long-context record for retained history, cache reuse and speculative state.
 
-### Structural model transformation
+**Known limitations:** inadequate suite size/reference fidelity cannot certify quantization retention; unavailable hardware cannot support a 128K claim.
 
-Open only if the measured systems envelope indicates that architecture-preserving systems work cannot close the required gap.
+**Exit:** M4, direct M5 qualification, or a bounded no-purchase finding.
 
-## Intervention proposal template
+## M4 — One measured intervention
 
-Every proposal must state:
+**Objective:** improve the bottleneck that matters end to end.
 
-- measured bottleneck;
-- estimated theoretical maximum end-to-end gain;
-- engineering cost;
-- hardware/access required;
-- PASS criterion;
-- KILL criterion;
-- exact before/after experiment.
+**Effort:** one week initially; extend once only with new evidence.
 
-## Exit gate
+**Included:** choose one of kernel/dequantization, affinity/NUMA, GPU placement, prefill/prefix reuse, context/indexer work, representation or expert caching. Caching needs traces and a VRAM opportunity-cost estimate. Prefer an upstream change. Predeclare maximum plausible gain, effort, exact A/B, quality checks and kill rule.
 
-Select **one primary intervention** and at most one secondary engineering track.
+**Excluded:** parallel optimization programs, unapproved structural model changes, buying from microbenchmark gains.
 
----
+**Acceptance:** paired improvement exceeds noise and preserves quality. Proposed materiality: ≥15% improvement in the constrained end-to-end metric, or a smaller improvement crossing the purchase boundary. Null results close honestly.
 
-# M5 — Validate the architecture direction
+**Manual test:** toggle the change and repeat a task plus the relevant context rung.
 
-## Core question
+**Known limitations:** faster kernels need not improve agent time; a new runtime requires a new baseline.
 
-> Does the selected intervention improve the full occupied-context workload enough to justify committing to its architecture class?
+**Exit:** promote, one bounded iterate, park or kill; rerun only affected M3 comparisons.
 
-## Required comparison
+## M5 — Purchase or preserve the budget
 
-Before and after on the same frozen workload where practical:
+**Objective:** decide about the only planned machine.
 
-- source/model/representation;
-- context occupancy;
-- runtime revision;
-- quality gate;
-- raw decode;
-- TTFT/prefill;
-- critical-path decomposition;
-- power;
-- cost.
+**Effort:** 4–6 hours once measurements exist; refresh quotes before purchase.
 
-## PASS criterion
+**Included:** exact compatible CPU/board/DIMM population/GPU/SSD/PSU/cooling/chassis/network BOM, BIOS and vendor-lock checks, slot clearance, cables, condition, taxes and delivery. Link proposed topology to measured topology. Prefer multiple obtainable baskets for a public cost claim; disclose private discounts.
 
-The intervention must produce a **material end-to-end improvement**, not merely a microbenchmark win, and preserve the capability gate.
+**Excluded:** buying a below-threshold research-only system, sold auctions as live stock, summing nominal device bandwidth, assuming single-socket boards can add a socket.
 
-A suggested rule for “material” during Mission 01 is:
+**Acceptance:** one stated purchase case has matched occupied-context raw performance, quality, useful task latency and a complete delivered quote. If topology differs, obtain matched validation before committing. Otherwise preserve budget with an explicit reopen trigger.
 
-- ≥15% improvement in the primary constrained end-to-end metric, **or**
-- a smaller measured improvement that removes the dominant bottleneck and unlocks a quantitatively credible next step toward the Breakthrough Challenge.
+**Manual test:** independently sum the BOM and trace compatibility and performance claims.
 
-This threshold may be revised in `missions/mission-01/decisions.md` with justification.
+**Known limitations:** private discounts do not establish public reproducibility; intermediate cost/performance combinations require a concrete owner decision.
 
-## KILL criterion
+**Exit:** purchase-ready proposal or a closed no-purchase decision. This milestone does not itself place orders.
 
-Kill or demote the approach if:
+## M6 — Integrate and validate the remote machine
 
-- the microbenchmark gain largely disappears end to end;
-- quality fails;
-- added hardware/software cost worsens capability-per-euro;
-- the new bottleneck leaves insufficient theoretical headroom;
-- complexity makes reproduction unrealistic for the target audience.
+**Objective:** operate the qualified machine reliably from the Mac.
 
-## Decision unlocked
+**Included:** assembly help, component checks, pinned Linux/driver/runtime, private remote access, restart recovery, isolated coding workspaces, telemetry and repeat M3 on the actual machine. Test a sustained task session and restart cycle; record wall power and thermal behavior.
 
-Classify the architecture direction as:
+**Excluded:** unauthenticated public API, enterprise orchestration, treating solar availability as continuous free power.
 
-- **promote** — build toward a complete candidate system;
-- **iterate** — one clear remaining bottleneck with credible headroom;
-- **park** — technically valid but poor economics/complexity;
-- **kill** — insufficient path to the challenge.
+**Acceptance:** remote task execution and recovery work, evidence persists, no blocking stability fault remains, and actual results meet the promised purchase case. A miss triggers remediation/return assessment, not retroactive threshold relaxation.
 
----
+**Manual test:** restart remotely, reconnect, execute an evaluated task and inspect evidence.
 
-# M6 — Candidate ≤€2,000 research system
+**Known limitations:** physical faults need local assistance; recovery depends on chosen hardware.
 
-## Core question
+**Exit:** validated personal system or documented failed qualification.
 
-> Given the evidence-selected architecture, what is the cheapest reproducible complete system that can validate it at full scale?
+## M7 — Publish and seek independent reproduction
 
-This is where the **AIXS hardware scanner** becomes an active procurement tool.
+**Objective:** make results challengeable.
 
-## Hardware-scanner rule
+**Included:** source/runtime pins, commands, quality uncertainty, occupancy, raw logs, distributions, BOM and negative findings. Provide public substitutes for private fixtures with explicit differences. Seek independent reproduction when an actual collaborator is available.
 
-The scanner searches for hardware that satisfies measured requirements, including:
+**Excluded:** claiming independent reproduction before it occurs; publishing private code or identifiers.
 
-- required RAM capacity;
-- achieved memory bandwidth class;
-- CPU instruction/kernel support;
-- required VRAM;
-- GPU architecture/runtime support;
-- PCIe topology;
-- power/cooling;
-- supply depth;
-- total complete-system cost;
-- software friction.
+**Acceptance:** internally replayable reproduction package. Label independent reproduction pending until performed. Breakthrough validation requires every public condition and independent reproduction; near-target and negative findings remain publishable.
 
-A cheap component that does not satisfy an earned requirement is not an AIXS target.
+**Manual test:** follow instructions in a clean environment, or inspect a complete dry run where hardware is unavailable.
 
-## Procurement policy
+**Known limitations:** external participation is not guaranteed and does not block a correctly labeled internal publication.
 
-Prefer in order:
+## M8 — Close Mission 01
 
-1. existing hardware;
-2. borrowed/partner access;
-3. rental/cloud access for measurement;
-4. used/refurbished purchase;
-5. new hardware only when economics remain compelling.
+**Objective:** record the best envelope and select one next question.
 
-## Required BOM methodology
+**Included:** task quality, costs, access limits, context results, failed interventions and unverified claims. Next directions may include longer-context usability, representation, a specific hardware opportunity or a materially better model.
 
-For each candidate BOM record:
+**Excluded:** opening all research domains simultaneously.
 
-- date;
-- region;
-- condition;
-- at least several contemporaneous purchasable price points where possible;
-- VAT/shipping/import assumptions;
-- motherboard/CPU/RAM/GPU/storage/PSU/cooling/chassis/network requirements;
-- replacement cost;
-- research cash actually spent separately.
+**Acceptance:** claims link to evidence, open items have status, and one bounded successor or monitoring decision is recorded.
 
-## Exit gate
+**Manual test:** a new contributor can explain what worked, why a purchase was rejected if applicable, and what evidence would change that decision.
 
-Publish at least one complete candidate BOM and either:
+**Known limitations:** not reaching the breakthrough can still produce a successful research cycle.
 
-- build it;
-- reproduce it through borrowed equivalent hardware;
-- or falsify it before purchase using the subsystem measurements.
+## Immediate queue and change control
 
----
+1. Obtain real repository/commit pairs and freeze the first task controls.
+2. Resolve the validator/template mismatch and validate one record.
+3. Inventory installed Mac artifacts and verify one small inherited result.
+4. Execute one local coding task with timing and evaluator output.
+5. Finish target support accounting and price one remote pilot.
 
-# M7 — Breakthrough attempt and external reproduction
+Week 1 aims for M0/M1; week 2 for M2; weeks 3–4 for available M3 evidence and an initial M5 decision. These are effort envelopes, not promises of passing hardware-dependent gates.
 
-## Breakthrough attempt
+Update [PROGRESS.md](PROGRESS.md) after coherent stages with evidence, failures, spending and next action. Freeze baseline task/model/runtime combinations for four-week comparison cycles; weekly decision review is 30 minutes.
 
-Run the frozen challenge on the best candidate architecture.
-
-A passing result requires:
-
-- ≥30 **raw target-model** tok/s;
-- ≥128K context actually occupied/retained at decode start;
-- ≤€2,000 reproducible complete-system replacement cost;
-- frozen capability gate passed.
-
-Also report even when not pass/fail criteria:
-
-- cold prefill;
-- cold TTFT;
-- warm TTFT/prefix reuse;
-- emitted speculative throughput;
-- power and joules/token;
-- full hardware/runtime/model provenance.
-
-## External reproduction
-
-At least one independent contributor or separate hardware owner should attempt the frozen result.
-
-External reproduction may use an equivalent rather than identical BOM if the equivalence is explicitly documented.
-
-## Outcome states
-
-### Breakthrough validated
-
-The challenge is met and independently reproduced.
-
-### Near frontier
-
-The best result is close enough that the remaining bottleneck is measured and quantitatively tractable.
-
-### Envelope miss
-
-The result remains materially outside the target, but Mission 01 has established why.
-
-All three are publishable outcomes.
-
----
-
-# M8 — Mission 01 closeout and next-mission decision
-
-## Required Mission 01 report
-
-Summarize:
-
-- selected model and why;
-- capability/representation choice;
-- measured active work;
-- CPU/GPU/memory critical path;
-- interventions tried;
-- negative results;
-- best complete-system result;
-- cost/power/context performance;
-- external reproduction status;
-- remaining physics/software gap.
-
-## Possible Mission 02 directions
-
-Open the next mission only from evidence. Examples:
-
-- **Architecture integration** — if a near-breakthrough system has one or two clear remaining bottlenecks;
-- **Representation / model transformation** — if active bytes/token must fall materially further;
-- **Long-context usability** — if decode is solved but prefill/TTFT dominates;
-- **Distributed local inference** — if a single-box cost/capacity wall is measured and activation traffic makes multi-node execution credible;
-- **Hardware exploitation** — if a specific depreciated hardware class clearly matches measured needs;
-- **New-model reset** — if a newer frontier open model dominates the Mission 01 target before the current path is worth continuing.
-
----
-
-# Immediate execution backlog
-
-These are the practical next actions from the current repository state.
-
-## P0 — do now
-
-- [ ] Freeze `quality-protocol.md` fast gate with exact tests and thresholds.
-- [ ] Create `M01-E001` — V4 vs Qwen artifact/active-work comparison.
-- [ ] Create `M01-E002` — CPU expert replay/roofline experiment.
-- [ ] Create `M01-E003` — true occupied-context end-to-end baseline.
-- [ ] Populate hardware-access registry for machines that can run E002/E003.
-- [ ] Record exact upstream commits / supported paths for V4 and Qwen.
-
-## P1 — after E001/E002 data
-
-- [ ] Freeze Mission 01 primary model and representation.
-- [ ] Publish first critical-path budget.
-- [ ] Identify the single highest-value intervention.
-- [ ] Define exact hardware access required for it.
-- [ ] Activate hardware scanning only against those requirements.
-
-## P2 — after E003/M4
-
-- [ ] Run the earned intervention.
-- [ ] Re-measure 128K occupied context.
-- [ ] Decide whether 1P, 2P, different GPU, cache, representation or another architecture class is justified.
-- [ ] Build candidate ≤€2K BOM.
-
----
-
-# Project management rules
-
-1. **One mission objective at a time.**
-2. **No more than two engineering tracks in parallel after baselines.**
-3. **Every hardware purchase must map to a named experiment or required reproduction.**
-4. **Every optimization must name the measured bottleneck it targets.**
-5. **Every performance claim must carry quality and context provenance.**
-6. **Every important external result remains evidence until AIXS reproduces it.**
-7. **Do not hide failed experiments.**
-8. **Prefer deleting an unearned milestone to maintaining roadmap theatre.**
-
----
-
-# Six-month strategic outcome
-
-Within the first major research cycle, AIXS should be able to answer these questions with evidence:
-
-1. What is the best current frontier-class sparse source model for affordable local inference?
-2. What are its actual bytes/work per token at useful context?
-3. Which subsystem prevents it from reaching 30 raw tok/s locally?
-4. How much of that bottleneck is software versus hardware?
-5. Which architecture class gives the best path per euro?
-6. What complete system can be reproduced today, and how far is it from the Breakthrough Challenge?
-7. What is the single most valuable next experiment?
-
-If AIXS can answer those seven questions reproducibly, the first research cycle is successful even if the final 30 tok/s / 128K / €2K target has not yet been crossed.
+Reopen architecture for invalid evidence, quality failure, incompatible artifacts, lost access or demonstrated results changing procurement. News and attractive component prices alone enter the backlog. Preserve experiment IDs and historical records. This ordering supersedes the older milestone sequence; reconcile subordinate mission documents in M0.

@@ -1,223 +1,91 @@
 # AIXS Vision
 
-> **Artificial Intelligence, Accessible.**
->
-> Frontier-class open-weight AI should become practically usable on affordable local hardware.
+> Artificial Intelligence, Accessible.
 
-## Why AIXS exists
+AIXS investigates how to make frontier-class open-weight coding agents practically usable on affordable local hardware. Its durable output is reproducible evidence, useful upstream improvements and complete-system economics.
 
-AI capability is advancing faster than affordable local inference. Large open-weight models may be downloadable, but useful local operation is still constrained by memory capacity, bandwidth, compute, topology, software efficiency, context cost and total system price.
+## Intended outcome
 
-AIXS exists to investigate that gap as an **open, reproducible systems-research problem**.
+Serve a capable model through a local API so an agent can inspect a repository, implement a change, run tests, repair failures and deliver a working result. Evaluate it against real historical project tasks, starting from an earlier checkpoint and judging behavior against the successful outcome. Different correct implementations are acceptable.
 
-The project is not trying to prove that one predetermined CPU, GPU, memory technology, runtime or optimization is the answer. It aims to discover, through measurement, which combination of model representation, software and hardware delivers the strongest useful capability per euro.
+The first operating assumption is one active coding-agent task. Long context is necessary to investigate, but allocated context and fluent chat do not establish coding-agent usefulness. Measure task success, completion time, tool reliability, prefill, prefix reuse and memory alongside decode speed.
 
-## North Star
+## North Star and purchase boundary
 
-AIXS aims to make frontier-class open-weight AI genuinely usable by people who cannot justify datacenter-class hardware.
+The public Breakthrough Challenge remains:
 
-The current provisional Breakthrough Challenge is:
+> Achieve ≥30 raw target-model decode tokens/second after ingesting and retaining at least 131,072 input tokens at decode start, on a complete reproducibly purchasable local system costing ≤€2,000, while passing a frozen coding-capability gate.
 
-> **Achieve ≥30 raw target-model decode tokens/second after genuinely occupying ≥128K context on a complete, reproducibly purchasable local system costing ≤€2,000, while passing a frozen source-lineage capability gate.**
+This is a research target, not a demonstrated capability or a purchase promise. Reserve output headroom beyond occupied input. Record native attention compression separately from runtime truncation or history eviction.
 
-This is a research target, not a promise and not a claim that the current state of the art already satisfies it.
+Candidate procurement has two acceptable cases, subject to measured coding quality and useful agent latency:
 
-The target may be revised only through an explicit recorded decision backed by evidence.
+- ≥25 raw tok/s at occupied 128K within €2,000 delivered.
+- ≥30 raw tok/s at occupied 128K within €2,500 delivered.
 
-## What success means
+Other cost/performance combinations require a concrete decision; do not automatically combine both relaxed limits. Approximately 10 tok/s at full context or a required €3,000+ machine means preserve the budget. A near-target purchase does not pass the public challenge.
 
-AIXS succeeds if it produces **reproducible knowledge and working methods that materially move the local frontier**, even before the full Breakthrough Challenge is reached.
+Quantization is permitted when it passes a rigorous comparison against the frozen source checkpoint. Source precision, converted representation, KV precision and speculative settings must be recorded separately. Structural changes such as deleting experts or changing routing are a separate, evidence-earned track.
 
-Success includes:
+## Public evaluation starting point
 
-1. identifying the strongest frontier-class source model for the local-inference opportunity;
-2. establishing the real per-token work and memory/compute envelope of that model;
-3. measuring where token latency is actually spent rather than inferring bottlenecks from specification sheets;
-4. demonstrating interventions that materially improve capability-per-euro or falsifying them cleanly;
-5. publishing complete-system economics and reproducible experiment records;
-6. enabling independent reproduction on other machines;
-7. eventually demonstrating a complete affordable local system that crosses the frozen Breakthrough envelope.
+- Begin with an available consumer-class development machine and a resident-model baseline.
+- Use bounded remote-compute experiments to investigate architectures the development machine cannot represent.
+- Record hardware, operating conditions, access costs and contributor constraints with each experiment rather than treating them as universal project facts.
+- Keep model weights, private task data and evaluator controls outside Git.
 
-Upstream adoption of an AIXS result is success. AIXS does not need to own a permanent runtime fork to be valuable.
+Begin with the Mac evaluator and a resident-model baseline. Mac results validate the workflow and specific mechanisms, not full DeepSeek feasibility or x86 performance. Use bounded rentals to investigate other architectures. Do not buy an inadequate machine solely to keep research moving.
 
-## The scientific object AIXS is building
+## Target models
 
-The durable product of AIXS is not a particular machine. It is an **evidence-backed local-inference envelope** connecting:
+| Role | Artifact | Rule |
+| --- | --- | --- |
+| Intended DeepSeek target | deepseek-ai/DeepSeek-V4-Flash-Vision-Exp | Verify backend and vision support separately |
+| Immediate challenger | Qwen/Qwen3.8-Flash-Next | Account for lookup tables, vision, draft weights and context state |
+| DeepSeek reference/control | deepseek-ai/DeepSeek-V4-Flash-0731 | Text-runtime control; cannot substitute silently for Vision-Exp |
+| Mac development surrogate | One already downloaded Qwen artifact | Inventory exact ID/quantization/revision; no frontier-quality claim by association |
 
-```text
-source capability
-      │
-      ↓
-model / representation
-      │
-      ↓
-active work per token
-      │
-      ↓
-CPU + GPU + memory + I/O ceilings
-      │
-      ↓
-measured critical path
-      │
-      ↓
-intervention
-      │
-      ↓
-capability × latency × context × power × €
-```
+Official identities and limitations are documented in the [adversarial review](docs/adversarial-review-2026-09-09.md). The requested name DeepSeek-V4-Flash-Vision-0731 is not the official ID verified in that review. Pin revisions before experiments; new releases enter the watchlist rather than resetting the mission automatically. Visual capability remains unvalidated until representative image tasks are selected.
 
-This lets hardware and software choices follow measured requirements instead of defining the project in advance.
-
-## Current model-selection hypothesis
-
-Mission 01 currently compares a small model set rather than building a benchmark zoo:
-
-- **DeepSeek-V4-Flash-0731** — reproduction anchor;
-- **Qwen3.8-Flash-Next** — target challenger;
-- **GLM-5.3-Flash** — later portability/reference model;
-- **Kimi K3** — stress / negative-control model.
-
-This ordering is provisional. The primary source lineage is frozen only after the model/artifact challenge and capability gate.
-
-The important comparison is not total checkpoint size alone. AIXS cares about **retained capability, active work per token, long-context behavior, representation size, runtime maturity and complete-system feasibility**.
-
-## Architecture position
-
-AIXS is deliberately architecture-agnostic until evidence earns a choice.
-
-Potential architectures include, but are not limited to:
-
-- unified-memory systems;
-- high-channel CPU memory with CPU expert execution;
-- CPU/GPU heterogeneous inference;
-- tiered hot/cold memory;
-- one- or multi-socket NUMA systems;
-- multiple accelerators;
-- architecture-preserving quantization and representation changes;
-- eventually distributed systems or structural model transformation if measurements justify them.
-
-None of these is the AIXS thesis by itself.
-
-The normal decision loop is:
+## Research flow
 
 ```text
-freeze workload
-      ↓
-measure active work
-      ↓
-measure subsystem ceilings
-      ↓
-measure actual critical path
-      ↓
-identify largest exploitable gap
-      ↓
-apply one evidence-earned intervention
-      ↓
-re-measure quality + latency + cost
+checkpoint task + frozen evaluator
+                ↓
+Mac end-to-end baseline + artifact/access accounting
+                ↓
+target quality and occupied-context measurements
+                ↓
+measured bottleneck + achievable end-to-end gain
+                ↓
+one intervention → repeat quality and performance
+                ↓
+buy / rent / preserve budget → publish evidence
 ```
 
-## Hardware position
+Measure a running baseline before building elaborate subsystem harnesses. Use analytical bounds and small probes to reject unaffordable or unsupported configurations early. Missing access is an explicit outcome, not a reason to invent measurements.
 
-AIXS is interested in depreciated, unusual and secondary-market hardware, but **hardware arbitrage is a supporting procurement function, not the research thesis**.
+## Principles
 
-The hardware scanner should answer:
+1. **Coding capability is part of performance.** Separate same-representation correctness from source-checkpoint quality. Small smoke suites cannot prove non-inferiority.
+2. **Raw and emitted throughput differ.** Use non-speculative decode for the challenge; evaluate speculation separately for practical agent use.
+3. **Actual context matters.** Record ingested, retained, reused and generated tokens, output reserve, truncation, native compression and cache policy.
+4. **Measure the critical path.** Distinguish CPU expert time, GPU serial work, synchronization, overlap, prefill and tool execution. Peak bandwidth is not achieved expert throughput.
+5. **One machine has limits.** Prefer useful expansion and supported software; rent topology classes it cannot represent. No architecture is predetermined.
+6. **Complete-system economics.** Include all required components, taxes and delivery. Record replacement cost separately from cash paid.
+7. **Upstream first.** Reuse and instrument existing runtimes; upstream adoption is success. Avoid a permanent fork without demonstrated need.
+8. **Reuse evidence selectively.** Preserve useful Mac findings and negative results without importing a large process framework or assuming cross-model transfer.
+9. **Bound the work.** One implementation task at a time, lightweight procurement research alongside it, four-week baseline freeze and a 30-minute weekly decision review.
+10. **Negative and inconclusive results count.** A justified no-purchase decision protects the project. Reopen failed approaches only when a relevant condition changes.
 
-> Given a measured requirement, what reproducibly obtainable hardware satisfies it at the lowest complete-system cost and acceptable engineering friction?
+## Scope and governance
 
-It should not answer:
+Mission 01 establishes a measured coding-agent frontier with existing resources and decides whether one affordable machine is justified. It is not a GPU shopping exercise, a universal operating system, a distributed-serving platform or a benchmark leaderboard without quality controls.
 
-> What cheap hardware looks interesting, and how can we reshape the project around it?
+Keep the existing structure: missions own decisions, research domains preserve knowledge, experiments record evidence. Keep weights and private task data outside Git.
 
-Borrowed, rented or partner hardware is preferred before major purchases when it can resolve the same uncertainty.
+Follow [Project_milestones.md](Project_milestones.md) for execution and [PROGRESS.md](PROGRESS.md) for current state. The [review](docs/adversarial-review-2026-09-09.md) records sources, unresolved claims and later structural changes. Revised top-level documents govern over conflicting older mission plans until M0 reconciliation; historical decisions and measurements remain preserved.
 
-## Core research principles
+## Success before breakthrough
 
-### 1. Measurement before architecture
-
-Do not select NUMA, caching, a GPU family, a memory technology or model surgery because it sounds promising. Measure the bottleneck first.
-
-### 2. Real workload before headline specifications
-
-A configured 128K context is not an occupied 128K context. Peak DRAM bandwidth is not achieved expert throughput. GPU FLOPS are not end-to-end token latency.
-
-### 3. Capability is part of performance
-
-AIXS does not win by making a model fast but materially worse. Representation changes must pass a frozen capability gate against the source lineage.
-
-### 4. Raw and speculative throughput are different metrics
-
-Always separate raw target-model decode from emitted throughput produced by MTP/speculation.
-
-### 5. Complete-system economics
-
-A €300 accelerator is not a €300 inference system. Cost claims include the compatible CPU, motherboard, RAM, accelerator, storage, power delivery, cooling and other required components at dated replacement prices.
-
-### 6. Upstream first
-
-Reuse, pin, reproduce and instrument strong existing projects before creating AIXS-specific runtime code.
-
-### 7. One earned intervention
-
-After baseline measurement, attack the largest exploitable bottleneck. Avoid opening multiple attractive but unearned optimization tracks.
-
-### 8. Negative results count
-
-A reproducible result that kills an architecture or optimization is useful progress and must remain visible.
-
-### 9. Reproducibility before rhetoric
-
-Every important claim should include enough model, runtime, workload, hardware and measurement provenance for another contributor to challenge it.
-
-### 10. Architecture can change; methodology should survive
-
-Models, runtimes and used-hardware prices move quickly. AIXS should be designed so that a new model or upstream optimization can be inserted into the same evidence process without resetting the project.
-
-## What AIXS is not
-
-AIXS is not:
-
-- a cheap-GPU shopping project;
-- a checkpoint-size competition;
-- a promise that a 500+ GB model must be the winning target;
-- a predetermined DDR/NUMA architecture;
-- a predetermined GPU expert-cache project;
-- a permanent llama.cpp or KTransformers fork;
-- a benchmark leaderboard without quality and methodology;
-- an excuse to buy exotic hardware before an experiment requires it;
-- five independent research teams running in parallel.
-
-## Operating model
-
-AIXS organizes work at three levels:
-
-1. **Missions** — define the current decision boundary and success criteria.
-2. **Research domains** — preserve reusable knowledge, hypotheses and tools.
-3. **Experiments** — produce the evidence that changes decisions.
-
-The project should maintain one active mission objective and no more than two engineering tracks in parallel after baseline work.
-
-## Current Mission
-
-**Mission 01 — Establish the Measured Frontier**
-
-Mission 01 must determine:
-
-1. which current frontier-class open-weight sparse model offers the strongest capability × local-feasibility opportunity;
-2. what its real active-work and memory/compute envelope is;
-3. which subsystem dominates its occupied-context critical path;
-4. what architecture intervention is actually earned by those measurements;
-5. how close a reproducible affordable system can move toward the Breakthrough Challenge.
-
-See [`missions/mission-01/README.md`](missions/mission-01/README.md).
-
-## Long-term direction
-
-If Mission 01 establishes a credible path, AIXS should progressively move from **measurement → bottleneck removal → architecture selection → integration → external reproduction → affordable demonstrator**.
-
-The long-term ambition is not merely to assemble one clever machine. It is to make the techniques and evidence reusable enough that future frontier open models can be evaluated and made locally accessible faster.
-
----
-
-**Guiding question:**
-
-> *What is the minimum-cost local system architecture that can preserve frontier-class capability while delivering genuinely interactive long-context inference — and what measured bottleneck must be removed next to get there?*
+Progress means a working task evaluator, a reliable Mac baseline, a verified target artifact, an affordable experiment, a measured bottleneck, a successful intervention or a defensible rejection. The final ambition is a capable local coding API with reproducible economics; the immediate commitment is evidence every week rather than repeated roadmap redesign.

@@ -25,6 +25,10 @@ A mission is a finite objective with exit criteria. It owns baseline decisions a
 
 ## Design rules
 
+Current implementation and maintenance gaps are recorded in [the audit](01%20AUDIT/AS_IS.md). Reserved adapters, patches and research directories need no recurring updates until they contain active work. Keep early evaluator code under the owning research domain; promote it to shared tools only when reuse is concrete.
+
+Development task handoffs live in [agent-workflow](agent-workflow/README.md); they reference experiment evidence rather than duplicating measurements. [Vision.md](../Vision.md) and [Project_milestones.md](../Project_milestones.md) own current direction while older mission protocols await reconciliation.
+
 1. Prefer links and stable identifiers over duplicated facts.
 2. Preserve historical experiment records; evolve schemas with versions.
 3. Keep large artifacts external while committing reproducibility metadata.

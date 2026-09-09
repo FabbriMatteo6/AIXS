@@ -102,6 +102,8 @@ AIXS keeps five interlocking domains as knowledge areas. They are **not five par
 
 ## How AIXS works
 
+Current execution direction: [Vision.md](Vision.md), [Project_milestones.md](Project_milestones.md) and [PROGRESS.md](PROGRESS.md). These govern conflicting older mission/model descriptions pending M0 reconciliation. Repository contributors using agents should follow [the five-role workflow](README_AGENTS.md).
+
 AIXS separates three things that are often mixed together:
 
 - **Missions** define the current objective and decision boundary.

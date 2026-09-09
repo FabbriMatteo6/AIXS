@@ -1,0 +1,6 @@
+interface:
+  display_name: "Closeout"
+  short_description: "Check gates, reconcile docs and archive the task"
+  default_prompt: "Use $closeout to verify test, review and physical gates, update affected documentation and archive the task."
+policy:
+  allow_implicit_invocation: false

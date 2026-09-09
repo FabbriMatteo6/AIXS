@@ -1,0 +1,6 @@
+interface:
+  display_name: "Tester"
+  short_description: "Run validation and record independent test evidence"
+  default_prompt: "Use $tester to validate the current task, add missing tests and write TESTING.md."
+policy:
+  allow_implicit_invocation: false

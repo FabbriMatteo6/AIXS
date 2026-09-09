@@ -63,3 +63,9 @@ cache/
 # Experiment scratch space
 **/scratch/
 **/tmp/
+
+# Local-only agent and evaluator material
+.agents/skills/.system/
+.agents/skills/agent-browser/
+.agents/skills/find-skills/
+private-evaluator/
